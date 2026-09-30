@@ -1,0 +1,65 @@
+From 7ec5f59511d196235a549699228a9a4e3fd3811c Mon Sep 17 00:00:00 2001
+From: The412Banner <the412banner@users.noreply.github.com>
+Date: Wed, 30 Sep 2026 19:10:22 -0400
+Subject: [PATCH 2/2] tu/kgsl: Answer zero-timeout timestamp polls without
+ waiting
+
+wait_timestamp_safe() sent a poll (a timeout that is zero or already
+past) to IOCTL_KGSL_DEVICE_WAITTIMESTAMP_CTXTID with timeout 0, which
+KGSL treats as "wait forever". Mesa's emulated timeline semaphores poll
+from vk_sync_timeline_gc_locked() on every submit that signals a
+timeline, while holding the timeline mutex, so vkd3d-proton (a timeline
+signal per submit plus a fence thread on the same mutex) ran the CPU and
+GPU in lock-step.
+
+A poll now reads IOCTL_KGSL_CMDSTREAM_READTIMESTAMP_CTXTID (retired)
+and returns VK_SUCCESS or VK_TIMEOUT at once. Adreno 750, D3D12 demo:
+378 -> 1422 fps on X11, 588 -> 3449 fps on a Wayland surface.
+---
+ src/freedreno/vulkan/tu_knl_kgsl.cc | 23 +++++++++++++++++++++++
+ 1 file changed, 23 insertions(+)
+
+diff --git a/src/freedreno/vulkan/tu_knl_kgsl.cc b/src/freedreno/vulkan/tu_knl_kgsl.cc
+index 6f1d024..341871e 100644
+--- a/src/freedreno/vulkan/tu_knl_kgsl.cc
++++ b/src/freedreno/vulkan/tu_knl_kgsl.cc
+@@ -850,6 +850,21 @@ get_relative_ms(uint64_t abs_timeout_ns)
+    return abs_timeout_ms - cur_time_ms;
+ }
+ 
++/* Whether the context has retired timestamp, without waiting. */
++static bool
++kgsl_timestamp_retired(int fd, unsigned int context_id, unsigned int timestamp)
++{
++   struct kgsl_cmdstream_readtimestamp_ctxtid req = {
++      .context_id = context_id,
++      .type = KGSL_TIMESTAMP_RETIRED,
++   };
++
++   if (safe_ioctl(fd, IOCTL_KGSL_CMDSTREAM_READTIMESTAMP_CTXTID, &req))
++      return false;
++
++   return timestamp_cmp(req.timestamp, timestamp);
++}
++
+ /* safe_ioctl is not enough as restarted waits would not adjust the timeout
+  * which could lead to waiting substantially longer than requested
+  */
+@@ -859,6 +874,14 @@ wait_timestamp_safe(int fd,
+                     unsigned int timestamp,
+                     uint64_t abs_timeout_ns)
+ {
++   /* KGSL treats a zero timeout as "wait forever", so a poll (a timeout that
++    * is zero or already past) must not reach the wait ioctl: it would block
++    * until the GPU finishes, and callers such as the timeline-semaphore GC
++    * poll while holding a lock on every submit. Read the retired timestamp.
++    */
++   if (get_relative_ms(abs_timeout_ns) == 0)
++      return kgsl_timestamp_retired(fd, context_id, timestamp) ? VK_SUCCESS : VK_TIMEOUT;
++
+    struct kgsl_device_waittimestamp_ctxtid wait = {
+       .context_id = context_id,
+       .timestamp = timestamp,
+-- 
+2.47.3
+

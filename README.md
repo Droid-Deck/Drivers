@@ -67,12 +67,14 @@ build and the release notes.
 | `scripts/android_ndk_compat.py` | ✓ | |
 | `scripts/linux_kgsl_wsi.py` | | ✓ |
 | `linux/0001` … `linux/0006` (mesh shaders, half-wave subgroups, A8XX cube, bindless and IB fixes) | | ✓ |
+| `kgsl/0001` (timestamp + sync-file merge crash), `kgsl/0002` (zero-timeout poll waited forever) | ✓ | ✓ |
 
 A script whose anchor no longer matches Mesa main exits non-zero and a `.patch` that no longer applies fails
 `git apply`, so upstream drift fails the build instead of shipping a driver without the fix. The `Check`
 workflow applies the whole set to the current Mesa main on every push.
 
-The RedMagic UBWC swapchain and IMapper5 gralloc work is by [Leb-Sun](https://github.com/Leb-Sun).
+The RedMagic UBWC swapchain and IMapper5 gralloc work is by [Leb-Sun](https://github.com/Leb-Sun). The two `kgsl/` fixes are by
+[The412Banner](https://github.com/The412Banner/Banners-Turnip) (`patches/common/` there).
 
 ## Versioning
 

@@ -123,5 +123,21 @@
       "linux"
     ],
     "summary": "Bounded cache of retired A8XX command-stream storage"
+  },
+  {
+    "file": "kgsl/0001-tu-kgsl-Convert-the-timestamp-side-when-merging-it-w.patch",
+    "targets": [
+      "android",
+      "linux"
+    ],
+    "summary": "Merging a timestamp syncobj with a sync file converted the wrong side and crashed (Cemu's first frame)"
+  },
+  {
+    "file": "kgsl/0002-tu-kgsl-Answer-zero-timeout-timestamp-polls-without-.patch",
+    "targets": [
+      "android",
+      "linux"
+    ],
+    "summary": "Zero-timeout timestamp polls no longer become KGSL's wait-forever, so vkd3d-proton D3D12 stops running CPU and GPU in lock-step"
   }
 ]

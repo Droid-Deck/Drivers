@@ -1,0 +1,58 @@
+From 4fa2969a9b41ac04b4542629e699e2dc899e8d8b Mon Sep 17 00:00:00 2001
+From: The412Banner <the412banner@users.noreply.github.com>
+Date: Wed, 30 Sep 2026 19:10:21 -0400
+Subject: [PATCH 1/2] tu/kgsl: Convert the timestamp side when merging it with
+ a sync file
+
+kgsl_syncobj_merge() called kgsl_syncobj_ts_to_fd() on the sync-file
+syncobj, which has no queue, when a timestamp result met a sync file
+(a NULL dereference in release builds, an assert in debug ones), and the
+two-queues branch merged an fd the timestamp result never had. A submit
+that waits on one semaphore of each kind crashes: Cemu does that every
+frame (previous command buffer + swapchain acquire) and crashed on its
+first one. The timestamp side now becomes the fence and is merged with
+the fd.
+
+Device-proven on DroidDeck's Linux runtime: Cemu, RPCS3, Dolphin.
+---
+ src/freedreno/vulkan/tu_knl_kgsl.cc | 15 +++++++++++----
+ 1 file changed, 11 insertions(+), 4 deletions(-)
+
+diff --git a/src/freedreno/vulkan/tu_knl_kgsl.cc b/src/freedreno/vulkan/tu_knl_kgsl.cc
+index 379c78d..6f1d024 100644
+--- a/src/freedreno/vulkan/tu_knl_kgsl.cc
++++ b/src/freedreno/vulkan/tu_knl_kgsl.cc
+@@ -1162,9 +1162,13 @@ kgsl_syncobj_merge(const struct kgsl_syncobj **syncobjs, uint32_t count)
+             if (ret.queue == sync->queue) {
+                ret.timestamp = max_ts(ret.timestamp, sync->timestamp);
+             } else {
+-               ret.state = KGSL_SYNCOBJ_STATE_FD;
++               /* Two queues: both timestamps become fences before they can be
++                * merged; ret's own fd is not valid while it is a timestamp.
++                */
++               int ret_fd = kgsl_syncobj_ts_to_fd(&ret);
+                int sync_fd = kgsl_syncobj_ts_to_fd(sync);
+-               ret.fd = sync_merge_close("tu_sync", ret.fd, sync_fd, true);
++               ret.state = KGSL_SYNCOBJ_STATE_FD;
++               ret.fd = sync_merge_close("tu_sync", ret_fd, sync_fd, true);
+                assert(ret.fd >= 0);
+             }
+          } else if (ret.state == KGSL_SYNCOBJ_STATE_FD) {
+@@ -1181,9 +1185,12 @@ kgsl_syncobj_merge(const struct kgsl_syncobj **syncobjs, uint32_t count)
+             ret.fd = sync_merge_close("tu_sync", ret.fd, sync->fd, false);
+             assert(ret.fd >= 0);
+          } else if (ret.state == KGSL_SYNCOBJ_STATE_TS) {
++            /* It is ret, the timestamp, that turns into a fence here: sync is
++             * already an fd (converting it read a queue it does not have).
++             */
++            int ret_fd = kgsl_syncobj_ts_to_fd(&ret);
+             ret.state = KGSL_SYNCOBJ_STATE_FD;
+-            int sync_fd = kgsl_syncobj_ts_to_fd(sync);
+-            ret.fd = sync_merge_close("tu_sync", ret.fd, sync_fd, true);
++            ret.fd = sync_merge_close("tu_sync", ret_fd, sync->fd, false);
+             assert(ret.fd >= 0);
+          } else {
+             ret = *sync;
+-- 
+2.47.3
+
