@@ -90,7 +90,10 @@ Tags are `DD-Turnip-vX.Y.Z`. The next version comes from the highest published (
 
 - `release.yml` runs every Wednesday 12:00 UTC and on manual dispatch (`Hotfix` checkbox). It resolves the
   version and the Mesa main commit, builds Android and Linux in parallel from that commit, packages and verifies
-  the bundle, and publishes the release.
+  the bundle, and publishes the release here and to the public
+  [Droid-Deck/Drivers-CI](https://github.com/Droid-Deck/Drivers-CI), which carries only the bundle and its
+  `.sha256` and is where DroidDeck downloads drivers from. Publishing there needs the `DRIVERS_CI_TOKEN` secret:
+  a fine-grained token with Contents read and write on Drivers-CI.
 - `check.yml` runs the version tests and applies the patch set to Mesa main on every push and pull request.
 
 ```sh

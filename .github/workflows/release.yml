@@ -137,5 +137,20 @@ jobs:
           TAG: ${{ needs.prepare.outputs.tag }}
           VERSION: ${{ needs.prepare.outputs.version }}
         run: |
-          gh release create "$TAG" "dist/$TAG.zip" "dist/$TAG.zip.sha256" --repo "$GITHUB_REPOSITORY" \
-            --target "$GITHUB_SHA" --title "DD-Turnip v$VERSION" --notes-file notes.md --latest
+          gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1 \
+            || gh release create "$TAG" "dist/$TAG.zip" "dist/$TAG.zip.sha256" --repo "$GITHUB_REPOSITORY" \
+              --target "$GITHUB_SHA" --title "DD-Turnip v$VERSION" --notes-file notes.md --latest
+      - name: Publish to Drivers-CI
+        env:
+          GH_TOKEN: ${{ secrets.DRIVERS_CI_TOKEN }}
+          TAG: ${{ needs.prepare.outputs.tag }}
+          VERSION: ${{ needs.prepare.outputs.version }}
+        run: |
+          set -euo pipefail
+          if [[ -z "$GH_TOKEN" ]]; then
+            echo "::error::DRIVERS_CI_TOKEN is not set, so $TAG was not published to Droid-Deck/Drivers-CI"
+            exit 1
+          fi
+          gh release view "$TAG" --repo Droid-Deck/Drivers-CI >/dev/null 2>&1 \
+            || gh release create "$TAG" "dist/$TAG.zip" "dist/$TAG.zip.sha256" --repo Droid-Deck/Drivers-CI \
+              --target main --title "DD-Turnip v$VERSION" --notes-file notes.md --latest
