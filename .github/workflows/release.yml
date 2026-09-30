@@ -26,7 +26,7 @@ jobs:
       mesa_commit: ${{ steps.mesa.outputs.commit }}
       mesa_version: ${{ steps.mesa.outputs.version }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
       - name: Test version logic
@@ -65,7 +65,7 @@ jobs:
       matrix:
         target: [android, linux]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
       - name: Host tools
@@ -89,12 +89,12 @@ jobs:
         env:
           ANDROID_NDK_HOME: ${{ steps.ndk.outputs.ndk-path }}
         run: scripts/build_${{ matrix.target }}.sh mesa
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: driver-${{ matrix.target }}
           path: out/
           if-no-files-found: error
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: patch-log-${{ matrix.target }}
@@ -107,10 +107,10 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           pattern: driver-*
           path: out
