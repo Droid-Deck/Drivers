@@ -2,9 +2,11 @@
 import argparse
 import hashlib
 import json
+import os
 import re
 import subprocess
 import sys
+import tempfile
 import zipfile
 from pathlib import Path
 
@@ -13,6 +15,8 @@ from release_version import PREFIX
 LIBRARY = 'libvulkan_freedreno.so'
 PLATFORMS = ('android', 'linux')
 MESA_URL = 'https://gitlab.freedesktop.org/mesa/mesa'
+CI_URL = 'https://github.com/Droid-Deck/Drivers-CI/releases/tag'
+ROOT = Path(__file__).resolve().parent.parent
 PWR_MAX = b'Failed to set initial PWR_MAX constraint'
 ABI = {
     'android': {'libc': 'bionic', 'needed': 'libc.so', 'markers': [b'Using IMapper v5 stable-C API via SP-HAL']},
@@ -77,6 +81,45 @@ def driver_meta(platform, version, mesa_version, mesa_commit, digest):
     }
 
 
+def notice(tag, mesa_version, mesa_commit):
+    return f'''{tag}
+
+Turnip, the Mesa freedreno Vulkan driver, built from Mesa {mesa_version} at {mesa_commit}
+with the DD-Turnip patch set, for Android (android/) and Linux ARM64 (linux/).
+
+Source: {tag}-source.tar.xz, published with these drivers at {CI_URL}/{tag}
+It holds Mesa at that commit (mesa/) and the patches and build scripts that produced them (drivers/).
+
+Licenses: Mesa is under the MIT license, with the exceptions its files name; its license texts are in
+LICENSES/mesa/. The patch set is distributed under the GNU General Public License version 3
+(LICENSES/GPL-3.0.txt), and so are these drivers.
+'''
+
+
+def license_files(mesa):
+    files = {'LICENSES/GPL-3.0.txt': (ROOT / 'LICENSE').read_bytes(),
+             'LICENSES/mesa/license.rst': (mesa / 'docs' / 'license.rst').read_bytes()}
+    for path in sorted((mesa / 'licenses').rglob('*')):
+        if path.is_file():
+            files[f'LICENSES/mesa/{path.relative_to(mesa / "licenses").as_posix()}'] = path.read_bytes()
+    return files
+
+
+def source_archive(mesa, recipe, tag, text, dist):
+    name = f'{tag}-source'
+    with tempfile.TemporaryDirectory() as work:
+        top = Path(work) / name
+        top.mkdir()
+        for repo, ref, prefix in ((mesa, 'HEAD', 'mesa/'), (ROOT, recipe, 'drivers/')):
+            archive = subprocess.run(['git', '-C', str(repo), 'archive', f'--prefix={prefix}', ref], check=True, capture_output=True).stdout
+            subprocess.run(['tar', '-x', '-C', str(top)], input=archive, check=True)
+        (top / 'NOTICE').write_text(text)
+        target = dist / f'{name}.tar.xz'
+        subprocess.run(['tar', '--sort=name', '--mtime=@0', '--owner=0', '--group=0', '--numeric-owner',
+                        '-C', work, '-cJf', str(target), name], check=True, env={**os.environ, 'XZ_OPT': '-9 -T0'})
+    return target
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--version', required=True)
@@ -84,7 +127,12 @@ def main():
     parser.add_argument('--mesa-version', required=True)
     parser.add_argument('--out', type=Path, default=Path('out'))
     parser.add_argument('--dist', type=Path, default=Path('dist'))
+    parser.add_argument('--mesa-src', type=Path, required=True)
+    parser.add_argument('--recipe', default='HEAD')
     args = parser.parse_args()
+    built = subprocess.run(['git', '-C', str(args.mesa_src), 'rev-parse', 'HEAD'], check=True, capture_output=True, text=True).stdout.strip()
+    if built != args.mesa_commit:
+        fail(f'--mesa-src is at {built}, expected {args.mesa_commit}')
     if not re.fullmatch(r'\d+\.\d+\.\d+', args.version):
         fail(f'bad version {args.version}')
 
@@ -116,6 +164,9 @@ def main():
             'sha256': digest,
         }
     files['manifest.json'] = (json.dumps(manifest, indent=2) + '\n').encode()
+    text = notice(tag, args.mesa_version, args.mesa_commit)
+    files['NOTICE'] = text.encode()
+    files.update(license_files(args.mesa_src))
 
     args.dist.mkdir(parents=True, exist_ok=True)
     bundle = args.dist / f'{tag}.zip'
@@ -127,9 +178,11 @@ def main():
             fail('bundle does not read back intact')
     digest = hashlib.sha256(bundle.read_bytes()).hexdigest()
     (args.dist / f'{bundle.name}.sha256').write_text(f'{digest}  {bundle.name}\n')
+    source = source_archive(args.mesa_src, args.recipe, tag, text, args.dist)
     for name in sorted(files):
         print(name)
     print(f'{bundle} {digest}')
+    print(f'{source} {source.stat().st_size}')
 
 
 if __name__ == '__main__':

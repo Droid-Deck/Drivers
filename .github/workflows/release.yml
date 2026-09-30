@@ -115,11 +115,13 @@ jobs:
           pattern: driver-*
           path: out
           merge-multiple: true
-      - name: Package bundle
+      - name: Package bundle and source
         run: |
+          set -euo pipefail
+          scripts/fetch_mesa.sh mesa "${{ needs.prepare.outputs.mesa_commit }}"
           python3 scripts/package_bundle.py --version "${{ needs.prepare.outputs.version }}" \
             --mesa-commit "${{ needs.prepare.outputs.mesa_commit }}" \
-            --mesa-version "${{ needs.prepare.outputs.mesa_version }}"
+            --mesa-version "${{ needs.prepare.outputs.mesa_version }}" --mesa-src mesa
       - name: Release notes
         env:
           GH_TOKEN: ${{ github.token }}
@@ -138,7 +140,7 @@ jobs:
           VERSION: ${{ needs.prepare.outputs.version }}
         run: |
           gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1 \
-            || gh release create "$TAG" "dist/$TAG.zip" "dist/$TAG.zip.sha256" --repo "$GITHUB_REPOSITORY" \
+            || gh release create "$TAG" "dist/$TAG.zip" "dist/$TAG.zip.sha256" "dist/$TAG-source.tar.xz" --repo "$GITHUB_REPOSITORY" \
               --target "$GITHUB_SHA" --title "DD-Turnip v$VERSION" --notes-file notes.md --latest
       - name: Publish to Drivers-CI
         env:
@@ -152,5 +154,5 @@ jobs:
             exit 1
           fi
           gh release view "$TAG" --repo Droid-Deck/Drivers-CI >/dev/null 2>&1 \
-            || gh release create "$TAG" "dist/$TAG.zip" "dist/$TAG.zip.sha256" --repo Droid-Deck/Drivers-CI \
+            || gh release create "$TAG" "dist/$TAG.zip" "dist/$TAG.zip.sha256" "dist/$TAG-source.tar.xz" --repo Droid-Deck/Drivers-CI \
               --target main --title "DD-Turnip v$VERSION" --notes-file notes.md --latest

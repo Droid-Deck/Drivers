@@ -1007,7 +1007,11 @@ diff --git a/src/freedreno/vulkan/tu_mesh.cc b/src/freedreno/vulkan/tu_mesh.cc
 new file mode 100644
 --- /dev/null
 +++ b/src/freedreno/vulkan/tu_mesh.cc
-@@ -0,0 +1,968 @@
+@@ -0,0 +1,972 @@
++/*
++ * Copyright © 2026 MaxsTechReview
++ * SPDX-License-Identifier: MIT
++ */
 +
 +#include "tu_mesh.h"
 +
@@ -1980,7 +1984,11 @@ diff --git a/src/freedreno/vulkan/tu_mesh.h b/src/freedreno/vulkan/tu_mesh.h
 new file mode 100644
 --- /dev/null
 +++ b/src/freedreno/vulkan/tu_mesh.h
-@@ -0,0 +1,106 @@
+@@ -0,0 +1,110 @@
++/*
++ * Copyright © 2026 MaxsTechReview
++ * SPDX-License-Identifier: MIT
++ */
 +
 +#ifndef TU_MESH_H
 +#define TU_MESH_H

@@ -1,3 +1,8 @@
+/*
+ * Mesa 3-D graphics library
+ * SPDX-License-Identifier: MIT
+ */
+
 #include <dirent.h>
 #include <dlfcn.h>
 #include <errno.h>

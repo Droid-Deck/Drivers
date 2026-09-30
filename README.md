@@ -6,7 +6,7 @@ ARM64 driver. Both ship in one bundle per release.
 
 ## Bundle
 
-Each release publishes `DD-Turnip-vX.Y.Z.zip` and its `.sha256`:
+Each release publishes `DD-Turnip-vX.Y.Z.zip`, its `.sha256`, and `DD-Turnip-vX.Y.Z-source.tar.xz`:
 
 ```
 manifest.json
@@ -14,7 +14,14 @@ android/libvulkan_freedreno.so
 android/meta.json
 linux/libvulkan_freedreno.so
 linux/meta.json
+NOTICE
+LICENSES/GPL-3.0.txt
+LICENSES/mesa/…
 ```
+
+The patch set is distributed under GPL-3.0, so every release carries its Corresponding Source beside the
+drivers: `-source.tar.xz` holds Mesa at the built commit (`mesa/`) and this repository at the commit that
+built it (`drivers/`). `NOTICE` in the zip says where it is and which licenses apply.
 
 | Path | Driver |
 |---|---|
@@ -91,8 +98,8 @@ Tags are `DD-Turnip-vX.Y.Z`. The next version comes from the highest published (
 - `release.yml` runs every Wednesday 12:00 UTC and on manual dispatch (`Hotfix` checkbox). It resolves the
   version and the Mesa main commit, builds Android and Linux in parallel from that commit, packages and verifies
   the bundle, and publishes the release here and to the public
-  [Droid-Deck/Drivers-CI](https://github.com/Droid-Deck/Drivers-CI), which carries only the bundle and its
-  `.sha256` and is where DroidDeck downloads drivers from. Publishing there needs the `DRIVERS_CI_TOKEN` secret:
+  [Droid-Deck/Drivers-CI](https://github.com/Droid-Deck/Drivers-CI), which carries only the release assets
+  (bundle, `.sha256`, source archive) and is where DroidDeck downloads drivers from. Publishing there needs the `DRIVERS_CI_TOKEN` secret:
   a fine-grained token with Contents read and write on Drivers-CI.
 - `check.yml` runs the version tests and applies the patch set to Mesa main on every push and pull request.
 
@@ -108,7 +115,7 @@ gh workflow run release.yml -f hotfix=true
 ```
 
 Fetches Mesa main (`MESA_REF` selects another ref), builds both drivers under `work/` and writes
-`dist/DD-Turnip-v0.1.0.zip`. Requirements: meson ≥ 1.5, ninja, Python with mako and PyYAML, flex, bison,
+`dist/DD-Turnip-v0.1.0.zip` with its `.sha256` and source archive. Requirements: meson ≥ 1.5, ninja, Python with mako and PyYAML, flex, bison,
 `ANDROID_NDK_HOME` pointing at an Android NDK, and `aarch64-linux-gnu-gcc`/`g++`/binutils with a host
 `wayland-scanner` for the Linux cross build. The Linux sysroot is assembled from Ubuntu 24.04 arm64 packages
 without root (`scripts/linux_sysroot.sh`); set `LINUX_SYSROOT` to reuse one.
