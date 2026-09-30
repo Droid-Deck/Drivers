@@ -2,8 +2,7 @@
 
 Turnip (Mesa freedreno Vulkan) for DroidDeck. Every build fetches the latest Mesa main, applies the patch set in
 `patches/`, and builds two drivers from that one Mesa commit: an Android driver (Adrenotools-style) and a Linux
-ARM64 driver. Both ship in one bundle per release. The patch set and build recipe are ported from
-[WinNative-Emu/Drivers](https://github.com/WinNative-Emu/Drivers), performance tuning only.
+ARM64 driver. Both ship in one bundle per release.
 
 ## Bundle
 
