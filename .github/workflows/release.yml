@@ -1,0 +1,141 @@
+name: DD-Turnip release
+
+on:
+  schedule:
+    - cron: '0 12 * * 3'
+  workflow_dispatch:
+    inputs:
+      hotfix:
+        description: Hotfix (bump the patch version instead of the minor version)
+        type: boolean
+        default: false
+
+concurrency:
+  group: dd-turnip-release
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  prepare:
+    runs-on: ubuntu-24.04
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      tag: ${{ steps.version.outputs.tag }}
+      mesa_commit: ${{ steps.mesa.outputs.commit }}
+      mesa_version: ${{ steps.mesa.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Test version logic
+        run: python3 -m unittest discover -s tests -v
+      - name: Resolve version
+        id: version
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HOTFIX: ${{ github.event_name == 'workflow_dispatch' && inputs.hotfix }}
+        run: |
+          set -euo pipefail
+          gh api --paginate --slurp "repos/$GITHUB_REPOSITORY/releases?per_page=100" > releases.json
+          python3 scripts/release_version.py "$HOTFIX" < releases.json | tee -a "$GITHUB_OUTPUT"
+      - name: Refuse an existing tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          if gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$TAG" --silent 2>/dev/null \
+            || gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "::error::$TAG already exists"
+            exit 1
+          fi
+      - name: Latest Mesa main
+        id: mesa
+        run: |
+          set -euo pipefail
+          echo "commit=$(scripts/fetch_mesa.sh mesa main)" >> "$GITHUB_OUTPUT"
+          echo "version=$(tr -d '[:space:]' < mesa/VERSION)" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: prepare
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    strategy:
+      matrix:
+        target: [android, linux]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Host tools
+        env:
+          CROSS: ${{ matrix.target == 'linux' && 'gcc-aarch64-linux-gnu g++-aarch64-linux-gnu binutils-aarch64-linux-gnu libwayland-dev' || '' }}
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends ninja-build flex bison glslang-tools pkg-config python3-pip $CROSS
+          sudo python3 -m pip install --break-system-packages --quiet 'meson>=1.5' mako pyyaml packaging
+      - name: Android NDK r26d
+        if: matrix.target == 'android'
+        id: ndk
+        uses: nttld/setup-ndk@afb4c9964b521afb97c864b7d40b11e6911bd410
+        with:
+          ndk-version: r26d
+          add-to-path: false
+          local-cache: true
+      - name: Mesa ${{ needs.prepare.outputs.mesa_commit }}
+        run: scripts/fetch_mesa.sh mesa "${{ needs.prepare.outputs.mesa_commit }}"
+      - name: Build
+        env:
+          ANDROID_NDK_HOME: ${{ steps.ndk.outputs.ndk-path }}
+        run: scripts/build_${{ matrix.target }}.sh mesa
+      - uses: actions/upload-artifact@v4
+        with:
+          name: driver-${{ matrix.target }}
+          path: out/
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: patch-log-${{ matrix.target }}
+          path: work/${{ matrix.target }}/patch.log
+          if-no-files-found: ignore
+
+  release:
+    needs: [prepare, build]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: driver-*
+          path: out
+          merge-multiple: true
+      - name: Package bundle
+        run: |
+          python3 scripts/package_bundle.py --version "${{ needs.prepare.outputs.version }}" \
+            --mesa-commit "${{ needs.prepare.outputs.mesa_commit }}" \
+            --mesa-version "${{ needs.prepare.outputs.mesa_version }}"
+      - name: Release notes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh api --paginate --slurp "repos/$GITHUB_REPOSITORY/releases?per_page=100" > releases.json
+          python3 scripts/release_notes.py --version "${{ needs.prepare.outputs.version }}" \
+            --mesa-commit "${{ needs.prepare.outputs.mesa_commit }}" \
+            --mesa-version "${{ needs.prepare.outputs.mesa_version }}" \
+            --releases releases.json --repo "$GITHUB_REPOSITORY" --recipe "$GITHUB_SHA" > notes.md
+          cat notes.md
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.prepare.outputs.tag }}
+          VERSION: ${{ needs.prepare.outputs.version }}
+        run: |
+          gh release create "$TAG" "dist/$TAG.zip" "dist/$TAG.zip.sha256" --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" --title "DD-Turnip v$VERSION" --notes-file notes.md --latest

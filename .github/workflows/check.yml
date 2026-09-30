@@ -1,0 +1,27 @@
+name: Check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Version logic
+        run: python3 -m unittest discover -s tests -v
+      - name: Patch set applies to Mesa main
+        run: |
+          set -euo pipefail
+          scripts/fetch_mesa.sh mesa main
+          for target in android linux; do
+            git -c advice.detachedHead=false clone -q --shared mesa "mesa-$target"
+            python3 scripts/apply_patches.py "$target" "mesa-$target"
+          done
