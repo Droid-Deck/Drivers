@@ -1,0 +1,35 @@
+diff --git a/src/freedreno/vulkan/tu_knl_kgsl.cc b/src/freedreno/vulkan/tu_knl_kgsl.cc
+index 44af0c22201..3a20aca2b12 100644
+--- a/src/freedreno/vulkan/tu_knl_kgsl.cc
++++ b/src/freedreno/vulkan/tu_knl_kgsl.cc
+@@ -812,6 +812,20 @@ get_relative_ms(uint64_t abs_timeout_ns)
+    return abs_timeout_ms - cur_time_ms;
+ }
+ 
++static bool
++kgsl_timestamp_retired(int fd, unsigned int context_id, unsigned int timestamp)
++{
++   struct kgsl_cmdstream_readtimestamp_ctxtid req = {
++      .context_id = context_id,
++      .type = KGSL_TIMESTAMP_RETIRED,
++   };
++
++   if (safe_ioctl(fd, IOCTL_KGSL_CMDSTREAM_READTIMESTAMP_CTXTID, &req))
++      return false;
++
++   return timestamp_cmp(req.timestamp, timestamp);
++}
++
+ /* safe_ioctl is not enough as restarted waits would not adjust the timeout
+  * which could lead to waiting substantially longer than requested
+  */
+@@ -821,6 +835,9 @@ wait_timestamp_safe(int fd,
+                     unsigned int timestamp,
+                     uint64_t abs_timeout_ns)
+ {
++   if (get_relative_ms(abs_timeout_ns) == 0)
++      return kgsl_timestamp_retired(fd, context_id, timestamp) ? VK_SUCCESS : VK_TIMEOUT;
++
+    struct kgsl_device_waittimestamp_ctxtid wait = {
+       .context_id = context_id,
+       .timestamp = timestamp,

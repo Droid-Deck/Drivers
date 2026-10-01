@@ -66,6 +66,14 @@ replace(
     'A829 KGSL chip_ids 0x44030A00 / 0xffff44030A00',
 )
 replace(DEVICES, A829_PROPS, A829_PROPS + '            disable_gmem = True,\n', 'A829 disable_gmem')
+replace(
+    DEVICES,
+    '        GPUId(chip_id=0xffff44050A31, name="Adreno (TM) 840"),\n',
+    '        GPUId(chip_id=0xffff44050A31, name="Adreno (TM) 840"),\n'
+    '        GPUId(chip_id=0xffff44050A21, name="Adreno (TM) 840v2"),\n'
+    '        GPUId(chip_id=0x44050A21, name="Adreno (TM) 840v2"), # KGSL\n',
+    'A840v2 chip_ids 0x44050A21 / 0xffff44050A21',
+)
 
 content = Path(DEVICES).read_text()
 if 'name="Adreno (TM) 825"' in content or 'name="FD825"' in content:

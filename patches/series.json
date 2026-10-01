@@ -20,7 +20,7 @@
       "android",
       "linux"
     ],
-    "summary": "A810 / A829 KGSL chip IDs and disable_gmem, plus the A825 entry"
+    "summary": "A810 / A829 / A840v2 KGSL chip IDs, A810 / A829 disable_gmem, plus the A825 entry"
   },
   {
     "file": "scripts/apply_a7xx_gen1_quirks.py",
@@ -83,6 +83,14 @@
     "summary": "KGSL dma-buf feedback device numbers and calibrated timestamp / present timing gating"
   },
   {
+    "file": "kgsl/0001-kgsl-syncobj-merge-ts-fd.patch",
+    "targets": [
+      "android",
+      "linux"
+    ],
+    "summary": "Merge a timestamp syncobj with a sync-file without dereferencing the fd side's missing queue (The412Banner/Banners-Turnip)"
+  },
+  {
     "file": "linux/0001-tu-mesh-shader-emulation.patch",
     "targets": [
       "linux"
@@ -118,10 +126,11 @@
     "summary": "Fetch A8XX command streams through a KGSL virtual BO alias"
   },
   {
-    "file": "linux/0006-tu-kgsl-a8xx-ib-cache.patch",
+    "file": "kgsl/0002-kgsl-zero-timeout-poll.patch",
     "targets": [
+      "android",
       "linux"
     ],
-    "summary": "Bounded cache of retired A8XX command-stream storage"
+    "summary": "Answer zero-timeout KGSL waits from the retired timestamp instead of blocking until the GPU finishes (The412Banner/Banners-Turnip)"
   }
 ]
