@@ -21,7 +21,6 @@ A829_PROPS = (
     '            sysmem_vpc_bv_pos_buf_size = 24576,\n'
 )
 A810_END = (
-    '        magic_regs = dict(),\n'
     '        raw_magic_regs = a8xx_base_raw_magic_regs,\n'
     '    ))\n'
 )
@@ -44,7 +43,6 @@ add_gpus([
         cs_shared_mem_size = 32 * 1024,
         wave_granularity = 2,
         fibers_per_sp = 128 * 2 * 16,
-        magic_regs = dict(),
         raw_magic_regs = a8xx_base_raw_magic_regs,
     ))
 '''

@@ -83,14 +83,6 @@
     "summary": "KGSL dma-buf feedback device numbers and calibrated timestamp / present timing gating"
   },
   {
-    "file": "kgsl/0001-kgsl-syncobj-merge-ts-fd.patch",
-    "targets": [
-      "android",
-      "linux"
-    ],
-    "summary": "Merge a timestamp syncobj with a sync-file without dereferencing the fd side's missing queue (The412Banner/Banners-Turnip)"
-  },
-  {
     "file": "linux/0001-tu-mesh-shader-emulation.patch",
     "targets": [
       "linux"
@@ -124,13 +116,5 @@
       "linux"
     ],
     "summary": "Fetch A8XX command streams through a KGSL virtual BO alias"
-  },
-  {
-    "file": "kgsl/0002-kgsl-zero-timeout-poll.patch",
-    "targets": [
-      "android",
-      "linux"
-    ],
-    "summary": "Answer zero-timeout KGSL waits from the retired timestamp instead of blocking until the GPU finishes (The412Banner/Banners-Turnip)"
   }
 ]
