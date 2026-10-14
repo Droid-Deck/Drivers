@@ -1,0 +1,18 @@
+--- a/src/freedreno/vulkan/tu_lrz.cc
++++ b/src/freedreno/vulkan/tu_lrz.cc
+@@ -929,6 +929,15 @@ tu_lrz_tiling_end(struct tu_cmd_buffer *cmd, struct tu_cs *cs)
+    } else {
+       tu_emit_event_write<CHIP>(cmd, cs, FD_LRZ_FLUSH);
+    }
++
++   /* On A8XX the LRZ flush above writes the fast-clear state back while the
++    * next render pass may already be programming a different LRZ buffer, and
++    * a large fast-clear area (e.g. a 4096x4096 depth image) followed by a pass
++    * on a smaller LRZ buffer hangs the GPU.  Reset the LRZ controls after the
++    * flush, as freedreno does on gen8 (fd6_lrz_inv()), so it completes first.
++    */
++   if (CHIP >= A8XX)
++      tu6_write_lrz_cntl<CHIP>(cmd, cs, {});
+ }
+ TU_GENX(tu_lrz_tiling_end);
+ 

@@ -67,6 +67,7 @@ build and the release notes.
 | `scripts/android_ndk_compat.py` | ✓ | |
 | `scripts/linux_kgsl_wsi.py` | | ✓ |
 | `linux/0001` … `linux/0005` (mesh shaders, half-wave subgroups, A8XX cube, bindless and IB fixes) | | ✓ |
+| `lrz/0001` (A8XX LRZ flush before the next render pass) | ✓ | ✓ |
 
 A script whose anchor no longer matches Mesa main exits non-zero and a `.patch` that no longer applies fails
 `git apply`, so upstream drift fails the build instead of shipping a driver without the fix. The `Check`
