@@ -84,8 +84,8 @@ Tags are `DD-Turnip-vX.Y.Z`. The next version comes from the highest published (
 | Trigger | Rule | Examples |
 |---|---|---|
 | No release yet | `0.1.0` | → `0.1.0` |
-| Weekly schedule, or manual run without Hotfix | minor + 1, patch reset; minor 9 rolls into the next major | `0.1.0` → `0.2.0`, `0.1.5` → `0.2.0`, `0.9.0` → `1.0.0`, `1.9.3` → `2.0.0` |
-| Manual run with Hotfix | patch + 1 | `0.1.0` → `0.1.1` → `0.1.2`, `0.9.0` → `0.9.1` |
+| Manual run without Hotfix | minor + 1, patch reset; minor 9 rolls into the next major | `0.1.0` → `0.2.0`, `0.1.5` → `0.2.0`, `0.9.0` → `1.0.0`, `1.9.3` → `2.0.0` |
+| Daily schedule, or manual run with Hotfix | patch + 1 | `0.1.0` → `0.1.1` → `0.1.2`, `0.9.0` → `0.9.1` |
 
 ## Release notes
 
@@ -97,7 +97,10 @@ Tags are `DD-Turnip-vX.Y.Z`. The next version comes from the highest published (
 
 ## Workflows
 
-- `release.yml` runs every Wednesday 12:00 UTC and on manual dispatch (`Hotfix` checkbox). It resolves the
+- `release.yml` runs every day at 12:00 UTC and on manual dispatch (`Hotfix` checkbox). A scheduled run only
+  builds when Mesa main has Turnip, Vulkan runtime or gralloc commits since the last release, or this repository
+  changed (`scripts/turnip_changed.py`). When a scheduled run fails, usually because a patch no longer applies, it
+  opens an issue (or comments on the open one), and the next scheduled release closes it. It resolves the
   version and the Mesa main commit, builds Android and Linux in parallel from that commit, packages and verifies
   the bundle, and publishes the release here and to the public
   [Droid-Deck/Drivers-CI](https://github.com/Droid-Deck/Drivers-CI), which carries only the release assets
