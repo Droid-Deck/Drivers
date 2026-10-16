@@ -83,6 +83,14 @@
     "summary": "KGSL dma-buf feedback device numbers and calibrated timestamp / present timing gating"
   },
   {
+    "file": "scripts/process_heap_usage.py",
+    "targets": [
+      "android",
+      "linux"
+    ],
+    "summary": "Memory budget reports the process-wide heap usage, so a D3D12 game reading it through DXVK's DXGI sees vkd3d-proton's allocations"
+  },
+  {
     "file": "linux/0001-tu-mesh-shader-emulation.patch",
     "targets": [
       "linux"
