@@ -1,6 +1,6 @@
 --- a/src/freedreno/common/freedreno_dev_info.h
 +++ b/src/freedreno/common/freedreno_dev_info.h
-@@ -482,6 +482,8 @@ struct fd_dev_info {
+@@ -493,6 +493,8 @@ struct fd_dev_info {
  
        /* On a750+ SUBPASS_FENCE also implicitly does CCU_RESOLVE_CLEAN */
        bool subpass_fence_cleans_resolve;
@@ -12,7 +12,7 @@
 diff --git a/src/freedreno/common/freedreno_devices.py b/src/freedreno/common/freedreno_devices.py
 --- a/src/freedreno/common/freedreno_devices.py
 +++ b/src/freedreno/common/freedreno_devices.py
-@@ -1462,6 +1462,7 @@ a8xx_base = GPUProps(
+@@ -1407,6 +1407,7 @@ a8xx_base = GPUProps(
          round_robin_errata = False,
          max_texel_buffer_range_elements = (1 << 29) - 1,
          max_storage_buffer_range_bytes = (1 << 31) - 1,
@@ -23,7 +23,7 @@ diff --git a/src/freedreno/common/freedreno_devices.py b/src/freedreno/common/fr
 diff --git a/src/freedreno/ir3/ir3_nir.c b/src/freedreno/ir3/ir3_nir.c
 --- a/src/freedreno/ir3/ir3_nir.c
 +++ b/src/freedreno/ir3/ir3_nir.c
-@@ -721,6 +721,56 @@ ir3_nir_min_lod_workaround(nir_shader *shader)
+@@ -718,6 +718,56 @@ ir3_nir_min_lod_workaround(nir_shader *shader)
        nir_metadata_control_flow, NULL);
  }
  
@@ -80,7 +80,7 @@ diff --git a/src/freedreno/ir3/ir3_nir.c b/src/freedreno/ir3/ir3_nir.c
  void
  ir3_finalize_nir(struct ir3_compiler *compiler,
                   const struct ir3_shader_nir_options *options,
-@@ -791,6 +841,9 @@ ir3_finalize_nir(struct ir3_compiler *compiler,
+@@ -788,6 +838,9 @@ ir3_finalize_nir(struct ir3_compiler *compiler,
     NIR_PASS(_, s, ir3_nir_lower_sparse_residency);
     NIR_PASS(_, s, ir3_nir_min_lod_workaround);
  

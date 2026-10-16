@@ -305,7 +305,7 @@ diff --git a/src/freedreno/ir3/ir3_nir.h b/src/freedreno/ir3/ir3_nir.h
 diff --git a/src/freedreno/ir3/ir3_shader.c b/src/freedreno/ir3/ir3_shader.c
 --- a/src/freedreno/ir3/ir3_shader.c
 +++ b/src/freedreno/ir3/ir3_shader.c
-@@ -1391,6 +1391,9 @@ ir3_shader_get_subgroup_size(const struct ir3_compiler *compiler,
+@@ -1392,6 +1392,9 @@ ir3_shader_get_subgroup_size(const struct ir3_compiler *compiler,
     case IR3_DOUBLE_ONLY:
        *subgroup_size = *max_subgroup_size = compiler->info->threadsize_base * 2;
        break;
@@ -329,7 +329,7 @@ diff --git a/src/freedreno/ir3/ir3_shader.h b/src/freedreno/ir3/ir3_shader.h
 diff --git a/src/freedreno/vulkan/tu_device.cc b/src/freedreno/vulkan/tu_device.cc
 --- a/src/freedreno/vulkan/tu_device.cc
 +++ b/src/freedreno/vulkan/tu_device.cc
-@@ -211,6 +211,13 @@ tu_subgroup_size(const struct tu_physical_device *device)
+@@ -208,6 +208,13 @@ tu_subgroup_size(const struct tu_physical_device *device)
            (device->expose_double_threadsize ? 2 : 1);
  }
  
@@ -343,7 +343,7 @@ diff --git a/src/freedreno/vulkan/tu_device.cc b/src/freedreno/vulkan/tu_device.
  static void
  get_device_extensions(const struct tu_physical_device *device,
                        struct vk_device_extension_table *ext)
-@@ -1128,16 +1135,16 @@ static void
+@@ -1125,16 +1132,16 @@ static void
  tu_get_physical_device_properties_1_3(struct tu_physical_device *pdevice,
                                        struct vk_properties *p)
  {
@@ -369,7 +369,7 @@ diff --git a/src/freedreno/vulkan/tu_device.cc b/src/freedreno/vulkan/tu_device.
 diff --git a/src/freedreno/vulkan/tu_pipeline.cc b/src/freedreno/vulkan/tu_pipeline.cc
 --- a/src/freedreno/vulkan/tu_pipeline.cc
 +++ b/src/freedreno/vulkan/tu_pipeline.cc
-@@ -1525,6 +1525,10 @@ tu_append_executable(struct tu_pipeline *pipeline,
+@@ -1523,6 +1523,10 @@ tu_append_executable(struct tu_pipeline *pipeline,
     struct tu_pipeline_executable exe = {
        .stage = variant->type,
        .stats = variant->info,
@@ -380,7 +380,7 @@ diff --git a/src/freedreno/vulkan/tu_pipeline.cc b/src/freedreno/vulkan/tu_pipel
        .is_binning = variant->binning_pass,
        .nir_from_spirv = nir_from_spirv,
        .nir_final = ralloc_strdup(pipeline->executables_mem_ctx, variant->disasm_info.nir),
-@@ -5202,7 +5206,6 @@ tu_GetPipelineExecutablePropertiesKHR(
+@@ -5200,7 +5204,6 @@ tu_GetPipelineExecutablePropertiesKHR(
        uint32_t* pExecutableCount,
        VkPipelineExecutablePropertiesKHR* pProperties)
  {
@@ -388,7 +388,7 @@ diff --git a/src/freedreno/vulkan/tu_pipeline.cc b/src/freedreno/vulkan/tu_pipel
     VK_FROM_HANDLE(tu_pipeline, pipeline, pPipelineInfo->pipeline);
     VK_OUTARRAY_MAKE_TYPED(VkPipelineExecutablePropertiesKHR, out,
                            pProperties, pExecutableCount);
-@@ -5219,8 +5222,7 @@ tu_GetPipelineExecutablePropertiesKHR(
+@@ -5217,8 +5220,7 @@ tu_GetPipelineExecutablePropertiesKHR(
  
           VK_COPY_STR(props->description, _mesa_shader_stage_to_string(stage));
  
@@ -412,7 +412,7 @@ diff --git a/src/freedreno/vulkan/tu_pipeline.h b/src/freedreno/vulkan/tu_pipeli
 diff --git a/src/freedreno/vulkan/tu_shader.cc b/src/freedreno/vulkan/tu_shader.cc
 --- a/src/freedreno/vulkan/tu_shader.cc
 +++ b/src/freedreno/vulkan/tu_shader.cc
-@@ -4151,7 +4151,11 @@ tu_shader_key_subgroup_size(struct tu_shader_key *key,
+@@ -4201,7 +4201,11 @@ tu_shader_key_subgroup_size(struct tu_shader_key *key,
                              struct tu_device *dev)
  {
     enum ir3_wavesize_option api_wavesize, real_wavesize;

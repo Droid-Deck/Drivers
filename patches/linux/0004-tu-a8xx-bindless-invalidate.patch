@@ -1,6 +1,6 @@
 --- a/src/freedreno/vulkan/tu_clear_blit.cc
 +++ b/src/freedreno/vulkan/tu_clear_blit.cc
-@@ -1079,6 +1079,8 @@ r3d_common(struct tu_cmd_buffer *cmd, struct tu_cs *cs, enum r3d_type type,
+@@ -1210,6 +1210,8 @@ r3d_common(struct tu_cmd_buffer *cmd, struct tu_cs *cs, enum r3d_type type,
           .gfx_shared_const = true,
           .cs_bindless = CHIP == A6XX ? 0x1f : 0xff,
           .gfx_bindless = CHIP == A6XX ? 0x1f : 0xff,));
@@ -12,22 +12,7 @@
 diff --git a/src/freedreno/vulkan/tu_cmd_buffer.cc b/src/freedreno/vulkan/tu_cmd_buffer.cc
 --- a/src/freedreno/vulkan/tu_cmd_buffer.cc
 +++ b/src/freedreno/vulkan/tu_cmd_buffer.cc
-@@ -390,12 +390,8 @@ tu6_emit_flushes(struct tu_cmd_buffer *cmd_buffer,
-       tu_emit_event_write<CHIP>(cmd_buffer, cs, FD_CACHE_CLEAN);
-    if (flushes & TU_CMD_FLAG_CACHE_INVALIDATE)
-       tu_emit_event_write<CHIP>(cmd_buffer, cs, FD_CACHE_INVALIDATE);
--   if (flushes & TU_CMD_FLAG_BINDLESS_DESCRIPTOR_INVALIDATE) {
--      tu_cs_emit_regs(cs, SP_UPDATE_CNTL(CHIP,
--            .cs_bindless = CHIP == A6XX ? 0x1f : 0xff,
--            .gfx_bindless = CHIP == A6XX ? 0x1f : 0xff,
--      ));
--   }
-+   if (flushes & TU_CMD_FLAG_BINDLESS_DESCRIPTOR_INVALIDATE)
-+      tu_emit_bindless_invalidate<CHIP>(cs, true, true);
- 
-    /* SUBPASS_SLICE_FENCE is a weaker version of:
-     * - CACHE_INVALIDATE (only invalidate UCHE GMEM aperture)
-@@ -2505,6 +2501,8 @@ tu_init_hw(struct tu_cmd_buffer *cmd, struct tu_cs *cs)
+@@ -2512,6 +2512,8 @@ tu_init_hw(struct tu_cmd_buffer *cmd, struct tu_cs *cs)
           .gfx_shared_const = true,
           .cs_bindless = CHIP == A6XX ? 0x1f : 0xff,
           .gfx_bindless = CHIP == A6XX ? 0x1f : 0xff,));
@@ -36,7 +21,7 @@ diff --git a/src/freedreno/vulkan/tu_cmd_buffer.cc b/src/freedreno/vulkan/tu_cmd
  
     tu_cs_emit_wfi(cs);
  
-@@ -4817,10 +4815,7 @@ tu6_emit_bindless_bases(struct tu_cmd_buffer *cmd, struct tu_cs *cs,
+@@ -4822,10 +4824,7 @@ tu6_emit_bindless_bases(struct tu_cmd_buffer *cmd, struct tu_cs *cs,
        }
     }
  
@@ -51,7 +36,7 @@ diff --git a/src/freedreno/vulkan/tu_cmd_buffer.cc b/src/freedreno/vulkan/tu_cmd
 diff --git a/src/freedreno/vulkan/tu_cmd_buffer.h b/src/freedreno/vulkan/tu_cmd_buffer.h
 --- a/src/freedreno/vulkan/tu_cmd_buffer.h
 +++ b/src/freedreno/vulkan/tu_cmd_buffer.h
-@@ -935,6 +935,23 @@ void tu6_emit_blit_scissor(struct tu_cmd_buffer *cmd, struct tu_cs *cs,
+@@ -932,6 +932,23 @@ void tu6_emit_blit_scissor(struct tu_cmd_buffer *cmd, struct tu_cs *cs,
  
  void tu_disable_draw_states(struct tu_cmd_buffer *cmd, struct tu_cs *cs);
  

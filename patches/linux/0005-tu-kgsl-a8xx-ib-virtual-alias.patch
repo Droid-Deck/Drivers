@@ -12,7 +12,7 @@
 diff --git a/src/freedreno/vulkan/tu_knl_kgsl.cc b/src/freedreno/vulkan/tu_knl_kgsl.cc
 --- a/src/freedreno/vulkan/tu_knl_kgsl.cc
 +++ b/src/freedreno/vulkan/tu_knl_kgsl.cc
-@@ -266,6 +266,91 @@ kgsl_align_flag(uint64_t align)
+@@ -297,6 +297,91 @@ kgsl_align_flag(uint64_t align)
     return 0;
  }
  
@@ -104,7 +104,7 @@ diff --git a/src/freedreno/vulkan/tu_knl_kgsl.cc b/src/freedreno/vulkan/tu_knl_k
  static VkResult
  kgsl_bo_init(struct tu_device *dev,
               struct vk_object_base *base,
-@@ -357,6 +442,10 @@ kgsl_bo_init(struct tu_device *dev,
+@@ -388,6 +473,10 @@ kgsl_bo_init(struct tu_device *dev,
        result = kgsl_sparse_vma_map(dev, lazy_vma, bo, 0);
     } else if (flags & TU_BO_ALLOC_REPLAYABLE) {
        result = kgsl_bo_user_map(dev, bo, client_iova);
@@ -115,7 +115,7 @@ diff --git a/src/freedreno/vulkan/tu_knl_kgsl.cc b/src/freedreno/vulkan/tu_knl_k
     }
  
     if (result != VK_SUCCESS)
-@@ -493,6 +582,9 @@ kgsl_bo_finish(struct tu_device *dev, struct tu_bo *bo)
+@@ -531,6 +620,9 @@ kgsl_bo_finish(struct tu_device *dev, struct tu_bo *bo)
  
     TU_RMV(bo_destroy, dev, bo);
  
