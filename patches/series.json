@@ -116,5 +116,13 @@
       "linux"
     ],
     "summary": "Fetch A8XX command streams through a KGSL virtual BO alias"
+  },
+  {
+    "file": "lrz/0001-tu-a8xx-lrz-reset-cntl-after-flush.patch",
+    "targets": [
+      "android",
+      "linux"
+    ],
+    "summary": "Reset the LRZ controls after the end-of-pass LRZ flush on A8XX, as freedreno does, so a large fast-cleared LRZ buffer no longer hangs the GPU"
   }
 ]
