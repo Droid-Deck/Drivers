@@ -31,14 +31,6 @@
     "summary": "Disable early preamble and scalar predicates on A720 / A725 / A730"
   },
   {
-    "file": "scripts/apply_a7xx_gen2_ubwc_hint.py",
-    "targets": [
-      "android",
-      "linux"
-    ],
-    "summary": "Enable the TP UBWC flag hint on FD740 / X1-85 to fix UI corruption"
-  },
-  {
     "file": "scripts/add_aimapper_gralloc.py",
     "targets": [
       "android"

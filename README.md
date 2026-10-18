@@ -59,7 +59,6 @@ build and the release notes.
 | `scripts/fix_a8xx_dev_info.py` | ✓ | ✓ |
 | `scripts/apply_a8xx_gpus.py` | ✓ | ✓ |
 | `scripts/apply_a7xx_gen1_quirks.py` | ✓ | ✓ |
-| `scripts/apply_a7xx_gen2_ubwc_hint.py` | ✓ | ✓ |
 | `scripts/add_aimapper_gralloc.py` + `aimapper/u_gralloc_aimapper.c` | ✓ | |
 | `scripts/add_ubwc_swapchain_usage.py` | ✓ | |
 | `scripts/autotune_bandwidth.py` | ✓ | ✓ |
