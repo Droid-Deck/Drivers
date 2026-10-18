@@ -2,7 +2,7 @@ name: DD-Turnip release
 
 on:
   schedule:
-    - cron: '0 12 * * 3'
+    - cron: '0 12 * * *'
   workflow_dispatch:
     inputs:
       hotfix:
@@ -25,6 +25,7 @@ jobs:
       tag: ${{ steps.version.outputs.tag }}
       mesa_commit: ${{ steps.mesa.outputs.commit }}
       mesa_version: ${{ steps.mesa.outputs.version }}
+      changed: ${{ steps.changed.outputs.changed }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -35,7 +36,7 @@ jobs:
         id: version
         env:
           GH_TOKEN: ${{ github.token }}
-          HOTFIX: ${{ github.event_name == 'workflow_dispatch' && inputs.hotfix }}
+          HOTFIX: ${{ github.event_name == 'schedule' || inputs.hotfix }}
         run: |
           set -euo pipefail
           gh api --paginate --slurp "repos/$GITHUB_REPOSITORY/releases?per_page=100" > releases.json
@@ -56,9 +57,22 @@ jobs:
           set -euo pipefail
           echo "commit=$(scripts/fetch_mesa.sh mesa main)" >> "$GITHUB_OUTPUT"
           echo "version=$(tr -d '[:space:]' < mesa/VERSION)" >> "$GITHUB_OUTPUT"
+      - name: Anything new for Turnip
+        id: changed
+        env:
+          SCHEDULED: ${{ github.event_name == 'schedule' }}
+        run: |
+          set -euo pipefail
+          if [[ "$SCHEDULED" != true ]]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          python3 scripts/turnip_changed.py --releases releases.json \
+            --mesa-commit "${{ steps.mesa.outputs.commit }}" --recipe "$GITHUB_SHA" | tee -a "$GITHUB_OUTPUT"
 
   build:
     needs: prepare
+    if: needs.prepare.outputs.changed == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     strategy:
@@ -156,3 +170,34 @@ jobs:
           gh release view "$TAG" --repo Droid-Deck/Drivers-CI >/dev/null 2>&1 \
             || gh release create "$TAG" "dist/$TAG.zip" "dist/$TAG.zip.sha256" "dist/$TAG-source.tar.xz" --repo Droid-Deck/Drivers-CI \
               --target main --title "DD-Turnip v$VERSION" --notes-file notes.md --latest
+
+  report:
+    needs: [prepare, build, release]
+    if: always() && github.event_name == 'schedule'
+    runs-on: ubuntu-24.04
+    permissions:
+      issues: write
+    steps:
+      - name: Open or close the follow-Mesa issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          FAILED: ${{ contains(needs.*.result, 'failure') }}
+          RELEASED: ${{ needs.release.result == 'success' }}
+          RUN: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          MESA: ${{ needs.prepare.outputs.mesa_commit }}
+          TITLE: The scheduled DD-Turnip build is failing
+        run: |
+          set -euo pipefail
+          issue=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "in:title \"$TITLE\"" --json number --jq '.[0].number // empty')
+          if [[ "$FAILED" == true ]]; then
+            body="The scheduled build against Mesa main \`${MESA:-unknown}\` failed: $RUN
+
+          Usually a patch in \`patches/\` no longer applies after an upstream change. The \`patch-log-*\` artifacts show which one. Until it is fixed, DroidDeck users stay on the last published DD-Turnip."
+            if [[ -n "$issue" ]]; then
+              gh issue comment "$issue" --repo "$GITHUB_REPOSITORY" --body "$body"
+            else
+              gh issue create --repo "$GITHUB_REPOSITORY" --title "$TITLE" --body "$body"
+            fi
+          elif [[ -n "$issue" && "$RELEASED" == true ]]; then
+            gh issue close "$issue" --repo "$GITHUB_REPOSITORY" --comment "Fixed: the scheduled build published again in $RUN"
+          fi
