@@ -65,6 +65,7 @@ build and the release notes.
 | `scripts/perf_pwr_max.py` | ✓ | ✓ |
 | `scripts/android_ndk_compat.py` | ✓ | |
 | `scripts/linux_kgsl_wsi.py` | | ✓ |
+| `scripts/process_heap_usage.py` | ✓ | ✓ |
 | `linux/0001` … `linux/0005` (mesh shaders, half-wave subgroups, A8XX cube, bindless and IB fixes) | | ✓ |
 | `lrz/0001` (A8XX LRZ flush before the next render pass) | ✓ | ✓ |
 
