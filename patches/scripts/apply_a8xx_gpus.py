@@ -73,6 +73,19 @@ replace(
     'A840v2 chip_ids 0x44050A21 / 0xffff44050A21',
 )
 
+# --- Adreno 850 (SM8975, Adreno850v2) --------------------------------------
+# KGSL reports chip_id 0x44051431 for the Adreno 850, which is not in the
+# upstream freedreno device table yet, so Turnip rejects the device with
+# VK_ERROR_INCOMPATIBLE_DRIVER. Reuse the A840 entry (6 CCU / 3 slices).
+if '0x44051431' not in Path(DEVICES).read_text():
+    replace(
+        DEVICES,
+        '        GPUId(chip_id=0x44050A21, name="Adreno (TM) 840v2"), # KGSL\n',
+        '        GPUId(chip_id=0x44050A21, name="Adreno (TM) 840v2"), # KGSL\n'
+        '        GPUId(chip_id=0x44051431, name="Adreno (TM) 850"), # KGSL\n',
+        'A850 KGSL chip_id 0x44051431',
+    )
+
 content = Path(DEVICES).read_text()
 if 'name="Adreno (TM) 825"' in content or 'name="FD825"' in content:
     print(f'{DEVICES}: A825 already present upstream')
