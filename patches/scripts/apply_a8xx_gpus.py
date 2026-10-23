@@ -73,6 +73,17 @@ replace(
     'A840v2 chip_ids 0x44050A21 / 0xffff44050A21',
 )
 
+# A845 (Snapdragon 8 Elite Gen 6 / Xiaomi 18 Pro): KGSL chip_id 0x44041430.
+# Attached to the 3-slice A840 configuration (6 CCU / 3 slices).
+if '0x44041430' not in Path(DEVICES).read_text():
+    replace(
+        DEVICES,
+        '        GPUId(chip_id=0xffff44050A31, name="Adreno (TM) 840"),\n',
+        '        GPUId(chip_id=0xffff44050A31, name="Adreno (TM) 840"),\n'
+        '        GPUId(chip_id=0x44041430, name="Adreno (TM) 845"), # KGSL\n',
+        'A845 on the 3-slice A840 config',
+    )
+
 content = Path(DEVICES).read_text()
 if 'name="Adreno (TM) 825"' in content or 'name="FD825"' in content:
     print(f'{DEVICES}: A825 already present upstream')
