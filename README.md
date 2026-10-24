@@ -84,8 +84,10 @@ Tags are `DD-Turnip-vX.Y.Z`. The next version comes from the highest published (
 | Trigger | Rule | Examples |
 |---|---|---|
 | No release yet | `0.1.0` | → `0.1.0` |
-| Manual run without Hotfix | minor + 1, patch reset; minor 9 rolls into the next major | `0.1.0` → `0.2.0`, `0.1.5` → `0.2.0`, `0.9.0` → `1.0.0`, `1.9.3` → `2.0.0` |
-| Daily schedule, or manual run with Hotfix | patch + 1 | `0.1.0` → `0.1.1` → `0.1.2`, `0.9.0` → `0.9.1` |
+| Weekly schedule, or manual run without Hotfix | minor + 1, patch reset; minor 9 rolls into the next major | `0.1.0` → `0.2.0`, `0.1.5` → `0.2.0`, `0.9.0` → `1.0.0`, `1.9.3` → `2.0.0` |
+| Manual run with Hotfix | patch + 1 | `0.1.0` → `0.1.1` → `0.1.2`, `0.9.0` → `0.9.1` |
+
+An unpromoted prerelease does not count, so the next build with the same version replaces it.
 
 ## Release notes
 
@@ -97,20 +99,26 @@ Tags are `DD-Turnip-vX.Y.Z`. The next version comes from the highest published (
 
 ## Workflows
 
-- `release.yml` runs every day at 12:00 UTC and on manual dispatch (`Hotfix` checkbox). A scheduled run only
-  builds when Mesa main has Turnip, Vulkan runtime or gralloc commits since the last release, or this repository
-  changed (`scripts/turnip_changed.py`). When a scheduled run fails, usually because a patch no longer applies, it
-  opens an issue (or comments on the open one), and the next scheduled release closes it. It resolves the
+- `release.yml` runs every Wednesday at 12:00 UTC and on manual dispatch (`Hotfix` and `Prerelease` checkboxes).
+  A scheduled run only builds when Mesa main has Turnip, Vulkan runtime or gralloc commits since the last release
+  or prerelease, or this repository changed (`scripts/turnip_changed.py`). When a scheduled run fails, usually
+  because a patch no longer applies, it opens an issue (or comments on the open one), and the next scheduled
+  build closes it. Scheduled runs and `Prerelease` runs publish a prerelease here only, which DroidDeck never
+  sees; `promote.yml` publishes an approved prerelease to Drivers-CI and marks it latest. It resolves the
   version and the Mesa main commit, builds Android and Linux in parallel from that commit, packages and verifies
   the bundle, and publishes the release here and to the public
   [Droid-Deck/Drivers-CI](https://github.com/Droid-Deck/Drivers-CI), which carries only the release assets
   (bundle, `.sha256`, source archive) and is where DroidDeck downloads drivers from. Publishing there needs the `DRIVERS_CI_TOKEN` secret:
   a fine-grained token with Contents read and write on Drivers-CI.
+- `promote.yml` runs on manual dispatch with the prerelease tag, copies its assets and notes to Drivers-CI and
+  marks it the latest release in both repositories.
 - `check.yml` runs the version tests and applies the patch set to Mesa main on every push and pull request.
 
 ```sh
 gh workflow run release.yml
 gh workflow run release.yml -f hotfix=true
+gh workflow run release.yml -f prerelease=true
+gh workflow run promote.yml -f tag=DD-Turnip-v0.4.0
 ```
 
 ## Local build

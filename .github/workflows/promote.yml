@@ -1,0 +1,45 @@
+name: DD-Turnip promote
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Prerelease to publish, e.g. DD-Turnip-v0.4.0
+        required: true
+        type: string
+
+concurrency:
+  group: dd-turnip-release
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  promote:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Publish ${{ inputs.tag }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CI_TOKEN: ${{ secrets.DRIVERS_CI_TOKEN }}
+          TAG: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          if [[ ! "$TAG" =~ ^DD-Turnip-v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::$TAG is not a DD-Turnip release tag"
+            exit 1
+          fi
+          if [[ -z "$CI_TOKEN" ]]; then
+            echo "::error::DRIVERS_CI_TOKEN is not set, so $TAG cannot be published to Droid-Deck/Drivers-CI"
+            exit 1
+          fi
+          gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json name,body > release.json
+          jq -r .body release.json > notes.md
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --dir dist \
+            --pattern "$TAG.zip" --pattern "$TAG.zip.sha256" --pattern "$TAG-source.tar.xz"
+          (cd dist && sha256sum -c "$TAG.zip.sha256")
+          GH_TOKEN="$CI_TOKEN" gh release view "$TAG" --repo Droid-Deck/Drivers-CI >/dev/null 2>&1 \
+            || GH_TOKEN="$CI_TOKEN" gh release create "$TAG" "dist/$TAG.zip" "dist/$TAG.zip.sha256" "dist/$TAG-source.tar.xz" \
+              --repo Droid-Deck/Drivers-CI --target main --title "$(jq -r .name release.json)" --notes-file notes.md --latest
+          gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --prerelease=false --latest
