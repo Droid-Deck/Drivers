@@ -20,7 +20,15 @@
       "android",
       "linux"
     ],
-    "summary": "A810 / A829 / A845 KGSL chip IDs, A810 / A829 disable_gmem, plus the A825 entry"
+    "summary": "A810 / A829 / A845 / A850 KGSL chip IDs, A810 / A829 disable_gmem, plus the A825 entry"
+  },
+  {
+    "file": "scripts/apply_a8xx_cat4_rpt.py",
+    "targets": [
+      "android",
+      "linux"
+    ],
+    "summary": "No category-4 repeat on A850, whose repeated SFU results otherwise turn DXVK and Unity 2D output grayscale (by misakayuuki)"
   },
   {
     "file": "scripts/apply_a7xx_gen1_quirks.py",
