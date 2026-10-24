@@ -13,9 +13,13 @@ def parse(tag):
     return tuple(map(int, match.groups())) if match else None
 
 
+def newest_release(releases):
+    built = [r for r in releases if not r['draft'] and parse(r['tag_name'])]
+    return max(built, key=lambda r: parse(r['tag_name']), default=None)
+
+
 def latest_release(releases):
-    published = [r for r in releases if not r['draft'] and not r['prerelease'] and parse(r['tag_name'])]
-    return max(published, key=lambda r: parse(r['tag_name']), default=None)
+    return newest_release([r for r in releases if not r['prerelease']])
 
 
 def next_version(current, hotfix):
