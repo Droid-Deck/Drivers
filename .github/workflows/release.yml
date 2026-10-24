@@ -2,13 +2,20 @@ name: DD-Turnip release
 
 on:
   schedule:
-    - cron: '0 12 * * *'
+    - cron: '0 12 * * 3'
   workflow_dispatch:
     inputs:
       hotfix:
         description: Hotfix (bump the patch version instead of the minor version)
         type: boolean
         default: false
+      prerelease:
+        description: Prerelease (stays off Drivers-CI until promoted with promote.yml)
+        type: boolean
+        default: false
+
+env:
+  PRERELEASE: ${{ github.event_name == 'schedule' || inputs.prerelease }}
 
 concurrency:
   group: dd-turnip-release
@@ -36,7 +43,7 @@ jobs:
         id: version
         env:
           GH_TOKEN: ${{ github.token }}
-          HOTFIX: ${{ github.event_name == 'schedule' || inputs.hotfix }}
+          HOTFIX: ${{ github.event_name == 'workflow_dispatch' && inputs.hotfix }}
         run: |
           set -euo pipefail
           gh api --paginate --slurp "repos/$GITHUB_REPOSITORY/releases?per_page=100" > releases.json
@@ -46,7 +53,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ steps.version.outputs.tag }}
         run: |
-          if gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$TAG" --silent 2>/dev/null \
+          if [[ "$(gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json isPrerelease --jq .isPrerelease 2>/dev/null)" == true ]]; then
+            echo "$TAG is an unpromoted prerelease and will be replaced"
+          elif gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$TAG" --silent 2>/dev/null \
             || gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             echo "::error::$TAG already exists"
             exit 1
@@ -153,10 +162,20 @@ jobs:
           TAG: ${{ needs.prepare.outputs.tag }}
           VERSION: ${{ needs.prepare.outputs.version }}
         run: |
+          set -euo pipefail
+          if [[ "$(gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json isPrerelease --jq .isPrerelease 2>/dev/null)" == true ]]; then
+            gh release delete "$TAG" --repo "$GITHUB_REPOSITORY" --cleanup-tag --yes
+          fi
+          if [[ "$PRERELEASE" == true ]]; then
+            flags=(--prerelease --latest=false)
+          else
+            flags=(--latest)
+          fi
           gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1 \
             || gh release create "$TAG" "dist/$TAG.zip" "dist/$TAG.zip.sha256" "dist/$TAG-source.tar.xz" --repo "$GITHUB_REPOSITORY" \
-              --target "$GITHUB_SHA" --title "DD-Turnip v$VERSION" --notes-file notes.md --latest
+              --target "$GITHUB_SHA" --title "DD-Turnip v$VERSION" --notes-file notes.md "${flags[@]}"
       - name: Publish to Drivers-CI
+        if: env.PRERELEASE != 'true'
         env:
           GH_TOKEN: ${{ secrets.DRIVERS_CI_TOKEN }}
           TAG: ${{ needs.prepare.outputs.tag }}

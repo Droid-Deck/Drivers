@@ -4,7 +4,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / 'scripts'))
 
-from release_version import latest_release, next_version, parse, version_string
+from release_version import latest_release, newest_release, next_version, parse, version_string
 
 
 def release(tag, draft=False, prerelease=False):
@@ -57,6 +57,15 @@ class ReleaseVersionTest(unittest.TestCase):
         ])
         self.assertEqual(latest['tag_name'], 'DD-Turnip-v0.1.10')
         self.assertIsNone(latest_release([release('DD-Turnip-v0.1.0', draft=True)]))
+
+    def test_newest_includes_prereleases_but_not_drafts(self):
+        releases = [
+            release('DD-Turnip-v0.3.0'),
+            release('DD-Turnip-v0.4.0', prerelease=True),
+            release('DD-Turnip-v0.5.0', draft=True),
+        ]
+        self.assertEqual(newest_release(releases)['tag_name'], 'DD-Turnip-v0.4.0')
+        self.assertEqual(latest_release(releases)['tag_name'], 'DD-Turnip-v0.3.0')
 
 
 if __name__ == '__main__':

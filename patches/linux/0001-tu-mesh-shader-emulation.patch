@@ -702,7 +702,7 @@ diff --git a/src/freedreno/vulkan/tu_cmd_buffer.cc b/src/freedreno/vulkan/tu_cmd
 +   if (draw->indirect)
 +      tu6_emit_empty_vs_params<CHIP>(cmd);
 +   else
-+      tu6_emit_vs_params(cmd, 0, 0, 0);
++      tu6_emit_vs_params(cmd, NULL, 0, 0, 0);
 +
 +   tu6_draw_common<CHIP>(cmd, cs, false, 0);
 +

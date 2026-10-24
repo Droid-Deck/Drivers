@@ -6,7 +6,7 @@ import tempfile
 from datetime import datetime, timedelta
 
 from release_notes import TURNIP_PATHS, fetch_history, log, previous_mesa_commit
-from release_version import latest_release
+from release_version import newest_release
 
 
 def turnip_commits(release, commit):
@@ -44,7 +44,7 @@ if __name__ == '__main__':
     parser.add_argument('--recipe', required=True)
     args = parser.parse_args()
     with open(args.releases) as f:
-        release = latest_release([r for page in json.load(f) for r in page])
+        release = newest_release([r for page in json.load(f) for r in page])
     build, reason = decide(release, args.mesa_commit, args.recipe)
     print(f'changed={"true" if build else "false"}')
     print(f'reason={reason}')
