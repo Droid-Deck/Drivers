@@ -28,7 +28,7 @@
       "android",
       "linux"
     ],
-    "summary": "No category-4 repeat on A850, whose repeated SFU results otherwise turn DXVK and Unity 2D output grayscale (by misakayuuki)"
+    "summary": "No category-4 repeat on A845 / A850, whose repeated SFU results otherwise turn DXVK and Unity 2D output grayscale (by misakayuuki)"
   },
   {
     "file": "scripts/apply_a7xx_gen1_quirks.py",
