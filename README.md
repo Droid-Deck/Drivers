@@ -58,6 +58,7 @@ build and the release notes.
 | `scripts/gralloc_ubwc_detect.py` | ✓ | |
 | `scripts/fix_a8xx_dev_info.py` | ✓ | ✓ |
 | `scripts/apply_a8xx_gpus.py` | ✓ | ✓ |
+| `scripts/apply_a8xx_cat4_rpt.py` | ✓ | ✓ |
 | `scripts/apply_a7xx_gen1_quirks.py` | ✓ | ✓ |
 | `scripts/add_aimapper_gralloc.py` + `aimapper/u_gralloc_aimapper.c` | ✓ | |
 | `scripts/add_ubwc_swapchain_usage.py` | ✓ | |
@@ -77,7 +78,8 @@ A script whose anchor no longer matches Mesa main exits non-zero and a `.patch` 
 workflow applies the whole set to the current Mesa main on every push.
 
 The RedMagic UBWC swapchain and IMapper5 gralloc work is by [Leb-Sun](https://github.com/Leb-Sun). The A8XX resolve, hysteresis and LRZ color-mask
-register patches are adapted from [Vauzi-17/710](https://github.com/Vauzi-17/710).
+register patches are adapted from [Vauzi-17/710](https://github.com/Vauzi-17/710). The A850 category-4
+repeat workaround is by [misakayuuki](https://github.com/misakayuuki).
 
 ## Versioning
 
