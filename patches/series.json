@@ -20,7 +20,7 @@
       "android",
       "linux"
     ],
-    "summary": "A810 / A829 / A840v2 KGSL chip IDs, A810 / A829 disable_gmem, plus the A825 entry"
+    "summary": "A810 / A829 KGSL chip IDs, A810 / A829 disable_gmem, plus the A825 entry"
   },
   {
     "file": "scripts/apply_a7xx_gen1_quirks.py",
@@ -43,6 +43,30 @@
       "android"
     ],
     "summary": "Request UBWC-compressed swapchain buffers through the AHB usage answer (by Leb-Sun)"
+  },
+  {
+    "file": "scripts/a8xx_resolve_cr_cntl.py",
+    "targets": [
+      "android",
+      "linux"
+    ],
+    "summary": "A8XX preamble sets RB_RESOLVE_CR_CNTL to 1 as the proprietary driver does (Vauzi-17/710)"
+  },
+  {
+    "file": "scripts/a8xx_sp_hysteresis.py",
+    "targets": [
+      "android",
+      "linux"
+    ],
+    "summary": "A8XX preamble sets the VS and PS shader-processor hysteresis the proprietary driver uses (Vauzi-17/710)"
+  },
+  {
+    "file": "scripts/a8xx_lrz_color_mask.py",
+    "targets": [
+      "android",
+      "linux"
+    ],
+    "summary": "A8XX blend state emits GRAS_LRZ_COLOR_COMP_MASK from the per-MRT write masks (Vauzi-17/710)"
   },
   {
     "file": "scripts/autotune_bandwidth.py",

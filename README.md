@@ -61,6 +61,9 @@ build and the release notes.
 | `scripts/apply_a7xx_gen1_quirks.py` | ✓ | ✓ |
 | `scripts/add_aimapper_gralloc.py` + `aimapper/u_gralloc_aimapper.c` | ✓ | |
 | `scripts/add_ubwc_swapchain_usage.py` | ✓ | |
+| `scripts/a8xx_resolve_cr_cntl.py` | ✓ | ✓ |
+| `scripts/a8xx_sp_hysteresis.py` | ✓ | ✓ |
+| `scripts/a8xx_lrz_color_mask.py` | ✓ | ✓ |
 | `scripts/autotune_bandwidth.py` | ✓ | ✓ |
 | `scripts/perf_pwr_max.py` | ✓ | ✓ |
 | `scripts/android_ndk_compat.py` | ✓ | |
@@ -73,8 +76,8 @@ A script whose anchor no longer matches Mesa main exits non-zero and a `.patch` 
 `git apply`, so upstream drift fails the build instead of shipping a driver without the fix. The `Check`
 workflow applies the whole set to the current Mesa main on every push.
 
-The RedMagic UBWC swapchain and IMapper5 gralloc work is by [Leb-Sun](https://github.com/Leb-Sun). The A840v2 chip ID comes from
-[The412Banner/Banners-Turnip](https://github.com/The412Banner/Banners-Turnip).
+The RedMagic UBWC swapchain and IMapper5 gralloc work is by [Leb-Sun](https://github.com/Leb-Sun). The A8XX resolve, hysteresis and LRZ color-mask
+register patches are adapted from [Vauzi-17/710](https://github.com/Vauzi-17/710).
 
 ## Versioning
 
