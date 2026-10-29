@@ -72,6 +72,11 @@ build and the release notes.
 | `scripts/process_heap_usage.py` | ✓ | ✓ |
 | `linux/0001` … `linux/0005` (mesh shaders, half-wave subgroups, A8XX cube, bindless and IB fixes) | | ✓ |
 | `lrz/0001` (A8XX LRZ flush before the next render pass) | ✓ | ✓ |
+| `android/0001` (A850v2 compute 2D LOD-zero texture-size workaround) | ✓ | |
+
+The Android A850v2 texture-size workaround is limited to chip ID `0x44051431`.
+See [diagnosis and validation](tests/manual/a850-compute-texture-size.md) for its
+scope and a compute probe.
 
 A script whose anchor no longer matches Mesa main exits non-zero and a `.patch` that no longer applies fails
 `git apply`, so upstream drift fails the build instead of shipping a driver without the fix. The `Check`

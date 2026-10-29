@@ -156,5 +156,12 @@
       "linux"
     ],
     "summary": "Reset the LRZ controls after the end-of-pass LRZ flush on A8XX, as freedreno does, so a large fast-cleared LRZ buffer no longer hangs the GPU"
+  },
+  {
+    "file": "android/0001-tu-a850-compute-txs-resinfo.patch",
+    "targets": [
+      "android"
+    ],
+    "summary": "Use RESINFO for A850v2 compute 2D LOD-zero texture sizes to fix black or fragmented LSFG frames"
   }
 ]
