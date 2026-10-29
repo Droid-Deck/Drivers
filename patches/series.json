@@ -156,5 +156,12 @@
       "linux"
     ],
     "summary": "Reset the LRZ controls after the end-of-pass LRZ flush on A8XX, as freedreno does, so a large fast-cleared LRZ buffer no longer hangs the GPU"
+  },
+  {
+    "file": "linux/0007-tu-descriptor-pool-heap-alignment.patch",
+    "targets": [
+      "linux"
+    ],
+    "summary": "Keep descriptor sets 64-byte aligned and inside the pool BO after vkResetDescriptorPool"
   }
 ]
