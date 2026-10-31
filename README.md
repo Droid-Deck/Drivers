@@ -72,6 +72,7 @@ build and the release notes.
 | `scripts/process_heap_usage.py` | ✓ | ✓ |
 | `linux/0001` … `linux/0005` (mesh shaders, half-wave subgroups, A8XX cube, bindless and IB fixes) | | ✓ |
 | `lrz/0001` (A8XX LRZ flush before the next render pass) | ✓ | ✓ |
+| `linux/0007` (descriptor sets stay aligned after a pool reset) | | ✓ |
 
 A script whose anchor no longer matches Mesa main exits non-zero and a `.patch` that no longer applies fails
 `git apply`, so upstream drift fails the build instead of shipping a driver without the fix. The `Check`
