@@ -156,5 +156,21 @@
       "linux"
     ],
     "summary": "Reset the LRZ controls after the end-of-pass LRZ flush on A8XX, as freedreno does, so a large fast-cleared LRZ buffer no longer hangs the GPU"
+  },
+  {
+    "file": "nir/0001-nir-lower-explicit-io-keep-32bit-offset-wrap.patch",
+    "targets": [
+      "android",
+      "linux"
+    ],
+    "summary": "Keep the 32-bit wrap of SSBO byte offsets when NIR pre-shifts array strides, so vkd3d-proton's UE5 Nanite hardware-raster cluster stores are no longer dropped (by K11MCH1)"
+  },
+  {
+    "file": "fdl/0001-fdl-a8xx-buffer-num-elements.patch",
+    "targets": [
+      "android",
+      "linux"
+    ],
+    "summary": "A8XX buffer descriptors use the 32-bit NUM_ELEMENTS field, so SSBOs of 1 GiB or more keep their size (by airidosas252)"
   }
 ]
