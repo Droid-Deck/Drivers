@@ -156,5 +156,12 @@
       "linux"
     ],
     "summary": "Reset the LRZ controls after the end-of-pass LRZ flush on A8XX, as freedreno does, so a large fast-cleared LRZ buffer no longer hangs the GPU"
+  },
+  {
+    "file": "linux/0006-ir3-shuffle-broadcast.patch",
+    "targets": [
+      "linux"
+    ],
+    "summary": "Lower subgroupShuffle with a uniform index to a broadcast and serve equal source indices together, instead of a loop over every relative offset"
   }
 ]
