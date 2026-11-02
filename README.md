@@ -74,6 +74,7 @@ build and the release notes.
 | `lrz/0001` (A8XX LRZ flush before the next render pass) | ✓ | ✓ |
 | `nir/0001` (32-bit SSBO offset wrap with pre-shifted strides, UE5 Nanite) | ✓ | ✓ |
 | `fdl/0001` (A8XX buffer descriptors of 2^30 elements or more) | ✓ | ✓ |
+| `tu/0001` (flushes before a render pass chain split across command buffers, UE5 indirect draws) | ✓ | ✓ |
 
 A script whose anchor no longer matches Mesa main exits non-zero and a `.patch` that no longer applies fails
 `git apply`, so upstream drift fails the build instead of shipping a driver without the fix. The `Check`
@@ -81,8 +82,8 @@ workflow applies the whole set to the current Mesa main on every push.
 
 The RedMagic UBWC swapchain and IMapper5 gralloc work is by [Leb-Sun](https://github.com/Leb-Sun). The A8XX resolve, hysteresis and LRZ color-mask
 register patches are adapted from [Vauzi-17/710](https://github.com/Vauzi-17/710). The A845 / A850 category-4
-repeat workaround is by [misakayuuki](https://github.com/misakayuuki). The SSBO offset wrap fix is by
-[K11MCH1](https://github.com/K11MCH1), and the A8XX buffer descriptor size fix is by
+repeat workaround is by [misakayuuki](https://github.com/misakayuuki). The SSBO offset wrap and render pass chain
+flush fixes are by [K11MCH1](https://github.com/K11MCH1), and the A8XX buffer descriptor size fix is by
 [airidosas252](https://github.com/airidosas252).
 
 ## Versioning
