@@ -163,5 +163,27 @@
       "android"
     ],
     "summary": "Use RESINFO for A850v2 compute 2D LOD-zero texture sizes to fix black or fragmented LSFG frames"
+    "file": "nir/0001-nir-lower-explicit-io-keep-32bit-offset-wrap.patch",
+    "targets": [
+      "android",
+      "linux"
+    ],
+    "summary": "Keep the 32-bit wrap of SSBO byte offsets when NIR pre-shifts array strides, so vkd3d-proton's UE5 Nanite hardware-raster cluster stores are no longer dropped (by K11MCH1)"
+  },
+  {
+    "file": "fdl/0001-fdl-a8xx-buffer-num-elements.patch",
+    "targets": [
+      "android",
+      "linux"
+    ],
+    "summary": "A8XX buffer descriptors use the 32-bit NUM_ELEMENTS field, so SSBOs of 1 GiB or more keep their size (by airidosas252)"
+  },
+  {
+    "file": "tu/0001-tu-flush-before-suspended-render-pass-chain.patch",
+    "targets": [
+      "android",
+      "linux"
+    ],
+    "summary": "Emit the pending cache flushes where a suspended dynamic render pass chain starts, so indirect draws in vkd3d-proton render passes split across command buffers no longer read their arguments before the compute pass writes them (UE5 Nanite and virtual shadow maps, by K11MCH1)"
   }
 ]
