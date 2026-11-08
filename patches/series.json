@@ -166,14 +166,6 @@
     "summary": "Keep the 32-bit wrap of SSBO byte offsets when NIR pre-shifts array strides, so vkd3d-proton's UE5 Nanite hardware-raster cluster stores are no longer dropped (by K11MCH1)"
   },
   {
-    "file": "fdl/0001-fdl-a8xx-buffer-num-elements.patch",
-    "targets": [
-      "android",
-      "linux"
-    ],
-    "summary": "A8XX buffer descriptors use the 32-bit NUM_ELEMENTS field, so SSBOs of 1 GiB or more keep their size (by airidosas252)"
-  },
-  {
     "file": "tu/0001-tu-flush-before-suspended-render-pass-chain.patch",
     "targets": [
       "android",
