@@ -15,7 +15,7 @@ on:
         default: false
 
 env:
-  PRERELEASE: ${{ github.event_name == 'schedule' || inputs.prerelease }}
+  PRERELEASE: ${{ github.event_name == 'workflow_dispatch' && inputs.prerelease }}
 
 concurrency:
   group: dd-turnip-release
