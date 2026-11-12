@@ -12,14 +12,14 @@
 diff --git a/src/freedreno/common/freedreno_devices.py b/src/freedreno/common/freedreno_devices.py
 --- a/src/freedreno/common/freedreno_devices.py
 +++ b/src/freedreno/common/freedreno_devices.py
-@@ -1407,6 +1407,7 @@ a8xx_base = GPUProps(
+@@ -1395,6 +1395,7 @@ a8xx_base = GPUProps(
          round_robin_errata = False,
          max_texel_buffer_range_elements = (1 << 29) - 1,
          max_storage_buffer_range_bytes = (1 << 31) - 1,
 +        cube_coord_hang_quirk = True,
  
          QCTDD10204462 = False,
-         QCTDD11147232 = False,
+         QCTDD10497382 = False,
 diff --git a/src/freedreno/ir3/ir3_nir.c b/src/freedreno/ir3/ir3_nir.c
 --- a/src/freedreno/ir3/ir3_nir.c
 +++ b/src/freedreno/ir3/ir3_nir.c
