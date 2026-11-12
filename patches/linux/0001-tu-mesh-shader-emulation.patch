@@ -505,7 +505,7 @@ diff --git a/src/freedreno/vulkan/tu_cmd_buffer.cc b/src/freedreno/vulkan/tu_cmd
 +                                            .localsizez = local_size[2] - 1));
 +   }
 +
-+   if (cmd->device->physical_device->info->props.has_rt_workaround &&
++   if (FD_QUIRK(cmd->device->physical_device->info, QCTDD10497382_rt_workaround) &&
 +       v->info.uses_ray_intersection) {
 +      tu_set_render_mode<CHIP>(cs, { .shader_uses_rt = true });
 +   }
