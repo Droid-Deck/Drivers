@@ -72,6 +72,7 @@ build and the release notes.
 | `scripts/process_heap_usage.py` | ✓ | ✓ |
 | `linux/0001` … `linux/0006` (mesh shaders, half-wave subgroups, A8XX cube, bindless and IB fixes, subgroup shuffle broadcast) | | ✓ |
 | `lrz/0001` (A8XX LRZ flush before the next render pass) | ✓ | ✓ |
+| `linux/0007` (descriptor sets stay aligned after a pool reset) | | ✓ |
 | `nir/0001` (32-bit SSBO offset wrap with pre-shifted strides, UE5 Nanite) | ✓ | ✓ |
 | `tu/0001` (flushes before a render pass chain split across command buffers, UE5 indirect draws) | ✓ | ✓ |
 

@@ -165,6 +165,13 @@
     "summary": "Lower subgroupShuffle with a uniform index to a broadcast and serve equal source indices together, instead of a loop over every relative offset"
   },
   {
+    "file": "linux/0007-tu-descriptor-pool-heap-alignment.patch",
+    "targets": [
+      "linux"
+    ],
+    "summary": "Keep descriptor sets 64-byte aligned and inside the pool BO after vkResetDescriptorPool"
+  },
+  {
     "file": "nir/0001-nir-lower-explicit-io-keep-32bit-offset-wrap.patch",
     "targets": [
       "android",
