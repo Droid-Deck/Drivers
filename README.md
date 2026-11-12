@@ -73,6 +73,8 @@ build and the release notes.
 | `linux/0001` … `linux/0005` (mesh shaders, half-wave subgroups, A8XX cube, bindless and IB fixes) | | ✓ |
 | `lrz/0001` (A8XX LRZ flush before the next render pass) | ✓ | ✓ |
 | `linux/0007` (descriptor sets stay aligned after a pool reset) | | ✓ |
+| `nir/0001` (32-bit SSBO offset wrap with pre-shifted strides, UE5 Nanite) | ✓ | ✓ |
+| `tu/0001` (flushes before a render pass chain split across command buffers, UE5 indirect draws) | ✓ | ✓ |
 
 A script whose anchor no longer matches Mesa main exits non-zero and a `.patch` that no longer applies fails
 `git apply`, so upstream drift fails the build instead of shipping a driver without the fix. The `Check`
@@ -80,7 +82,10 @@ workflow applies the whole set to the current Mesa main on every push.
 
 The RedMagic UBWC swapchain and IMapper5 gralloc work is by [Leb-Sun](https://github.com/Leb-Sun). The A8XX resolve, hysteresis and LRZ color-mask
 register patches are adapted from [Vauzi-17/710](https://github.com/Vauzi-17/710). The A845 / A850 category-4
-repeat workaround is by [misakayuuki](https://github.com/misakayuuki).
+repeat workaround is by [misakayuuki](https://github.com/misakayuuki). The SSBO offset wrap and render pass chain
+flush fixes are by [K11MCH1](https://github.com/K11MCH1). The A8XX buffer descriptor size fix by
+[airidosas252](https://github.com/airidosas252) is now in Mesa main
+([`5b2db4b8`](https://gitlab.freedesktop.org/mesa/mesa/-/commit/5b2db4b8)) and no longer carried here.
 
 ## Versioning
 
@@ -109,8 +114,9 @@ An unpromoted prerelease does not count, so the next build with the same version
   A scheduled run only builds when Mesa main has Turnip, Vulkan runtime or gralloc commits since the last release
   or prerelease, or this repository changed (`scripts/turnip_changed.py`). When a scheduled run fails, usually
   because a patch no longer applies, it opens an issue (or comments on the open one), and the next scheduled
-  build closes it. Scheduled runs and `Prerelease` runs publish a prerelease here only, which DroidDeck never
-  sees; `promote.yml` publishes an approved prerelease to Drivers-CI and marks it latest. It resolves the
+  build closes it. A successful scheduled or manual run publishes straight to Drivers-CI as the latest release.
+  `Prerelease` runs publish a prerelease here only, which DroidDeck never sees; `promote.yml` publishes an
+  approved prerelease to Drivers-CI and marks it latest. It resolves the
   version and the Mesa main commit, builds Android and Linux in parallel from that commit, packages and verifies
   the bundle, and publishes the release here and to the public
   [Droid-Deck/Drivers-CI](https://github.com/Droid-Deck/Drivers-CI), which carries only the release assets

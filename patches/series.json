@@ -104,7 +104,7 @@
     "targets": [
       "linux"
     ],
-    "summary": "KGSL dma-buf feedback device numbers and calibrated timestamp / present timing gating"
+    "summary": "KGSL dma-buf feedback device numbers"
   },
   {
     "file": "scripts/process_heap_usage.py",
@@ -163,5 +163,21 @@
       "linux"
     ],
     "summary": "Keep descriptor sets 64-byte aligned and inside the pool BO after vkResetDescriptorPool"
+  },
+  {
+    "file": "nir/0001-nir-lower-explicit-io-keep-32bit-offset-wrap.patch",
+    "targets": [
+      "android",
+      "linux"
+    ],
+    "summary": "Keep the 32-bit wrap of SSBO byte offsets when NIR pre-shifts array strides, so vkd3d-proton's UE5 Nanite hardware-raster cluster stores are no longer dropped (by K11MCH1)"
+  },
+  {
+    "file": "tu/0001-tu-flush-before-suspended-render-pass-chain.patch",
+    "targets": [
+      "android",
+      "linux"
+    ],
+    "summary": "Emit the pending cache flushes where a suspended dynamic render pass chain starts, so indirect draws in vkd3d-proton render passes split across command buffers no longer read their arguments before the compute pass writes them (UE5 Nanite and virtual shadow maps, by K11MCH1)"
   }
 ]
