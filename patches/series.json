@@ -104,7 +104,7 @@
     "targets": [
       "linux"
     ],
-    "summary": "KGSL dma-buf feedback device numbers and calibrated timestamp / present timing gating"
+    "summary": "KGSL dma-buf feedback device numbers"
   },
   {
     "file": "scripts/process_heap_usage.py",
