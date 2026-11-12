@@ -1,0 +1,33 @@
+--- a/src/freedreno/vulkan/tu_shader.cc
++++ b/src/freedreno/vulkan/tu_shader.cc
+@@ -1028,6 +1028,30 @@
+       /* for the input attachment case: */
+       if (!nir_def_is_intrinsic(bindless))
+          tex->src[tex_src_idx].src_type = nir_tex_src_texture_offset;
++   }
++
++   /* A850v2 GETSIZE can return corrupt compute dimensions. RESINFO uses the
++    * same 2D view width/height at LOD 0, but does not minify for other LODs.
++    */
++   if (!ref && dev->physical_device->dev_id.chip_id == 0x44051431 &&
++       b->shader->info.stage == MESA_SHADER_COMPUTE &&
++       tex->op == nir_texop_txs && tex->sampler_dim == GLSL_SAMPLER_DIM_2D &&
++       !tex->is_array && tex->def.num_components == 2 &&
++       tex->def.bit_size == 32 && tex_src_idx >= 0 &&
++       tex->src[tex_src_idx].src_type == nir_tex_src_texture_handle) {
++      int lod_idx = nir_tex_instr_src_index(tex, nir_tex_src_lod);
++      if (lod_idx >= 0 && nir_src_is_const(tex->src[lod_idx].src) &&
++          nir_src_as_uint(tex->src[lod_idx].src) == 0) {
++         gl_access_qualifier access = static_cast<gl_access_qualifier>(
++            (descriptor_valid ? ACCESS_CAN_SPECULATE : 0) |
++            (tex->texture_non_uniform ? ACCESS_NON_UNIFORM : 0));
++         nir_def *size = nir_bindless_image_size(
++            b, 2, 32, tex->src[tex_src_idx].src.ssa, nir_imm_int(b, 0),
++            .image_dim = GLSL_SAMPLER_DIM_2D, .image_array = false,
++            .access = access);
++         nir_def_replace(&tex->def, size);
++         return true;
++      }
+    }
+ 
+    if (dev->physical_device->compiler_options.enable_texel_buffer_emulation &&

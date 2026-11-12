@@ -72,6 +72,11 @@ build and the release notes.
 | `scripts/process_heap_usage.py` | ✓ | ✓ |
 | `linux/0001` … `linux/0005` (mesh shaders, half-wave subgroups, A8XX cube, bindless and IB fixes) | | ✓ |
 | `lrz/0001` (A8XX LRZ flush before the next render pass) | ✓ | ✓ |
+| `android/0001` (A850v2 compute 2D LOD-zero texture-size workaround) | ✓ | |
+
+The Android A850v2 texture-size workaround is limited to chip ID `0x44051431`.
+See [diagnosis and validation](tests/manual/a850-compute-texture-size.md) for its
+scope and a compute probe.
 | `nir/0001` (32-bit SSBO offset wrap with pre-shifted strides, UE5 Nanite) | ✓ | ✓ |
 | `tu/0001` (flushes before a render pass chain split across command buffers, UE5 indirect draws) | ✓ | ✓ |
 

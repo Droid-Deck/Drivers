@@ -1,0 +1,17 @@
+#version 450
+layout(local_size_x=16,local_size_y=16,local_size_z=1) in;
+layout(set=0,binding=1) uniform sampler s;
+layout(set=0,binding=3) uniform texture2D inputFrame;
+layout(set=0,binding=8,rgba8) writeonly uniform image2D outputFrame;
+void main() {
+    ivec2 p=ivec2(gl_GlobalInvocationID.xy);
+    if(any(greaterThanEqual(p,ivec2(1562,720)))) return;
+    ivec2 q=p.y<360?textureSize(sampler2D(inputFrame,s),0):imageSize(outputFrame);
+    // Leave the partial final column blue; shifting a uint by 32 is undefined.
+    uint bit=uint(p.x/48);
+    if(bit>=32u) {
+        imageStore(outputFrame,p,vec4(0,0,1,1));
+        return;
+    }
+    imageStore(outputFrame,p,vec4(float((uint(q.x)>>bit)&1),float((uint(q.y)>>bit)&1),1,1));
+}
