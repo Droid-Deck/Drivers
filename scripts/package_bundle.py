@@ -17,7 +17,6 @@ PLATFORMS = ('android', 'linux')
 MESA_URL = 'https://gitlab.freedesktop.org/mesa/mesa'
 CI_URL = 'https://github.com/Droid-Deck/Drivers-CI/releases/tag'
 ROOT = Path(__file__).resolve().parent.parent
-PWR_MAX = b'Failed to set initial PWR_MAX constraint'
 ABI = {
     'android': {'libc': 'bionic', 'needed': 'libc.so', 'markers': [b'Using IMapper v5 stable-C API via SP-HAL']},
     'linux': {'libc': 'glibc', 'needed': 'libc.so.6', 'markers': [b'vkCreateWaylandSurfaceKHR', b'vkCreateXcbSurfaceKHR']},
@@ -43,8 +42,6 @@ def verify(platform, library):
             fail(f'{platform}: missing {marker.decode()}')
     if platform == 'linux' and b'drirc.d' in data:
         fail(f'{platform}: reads driver defaults from disk')
-    if PWR_MAX not in data:
-        fail(f'{platform}: missing the PWR_MAX performance patch')
     return hashlib.sha256(data).hexdigest()
 
 

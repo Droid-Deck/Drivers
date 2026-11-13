@@ -122,8 +122,6 @@ def main():
         '| `linux/` | Linux ARM64, glibc, Wayland/X11 WSI |',
         '| `manifest.json` | Both drivers with their path, libc and SHA-256 |',
         '',
-        'Performance tuning: KGSL `PWR_MAX` is requested at queue creation and every 1000 submissions.',
-        '',
     ]
 
     with tempfile.TemporaryDirectory() as repo:

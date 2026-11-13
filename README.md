@@ -45,8 +45,7 @@ built it (`drivers/`). `NOTICE` in the zip says where it is and which licenses a
 ```
 
 Packaging refuses a bundle unless both libraries are AArch64, link the right libc, carry their platform markers
-(IMapper5 gralloc on Android, Wayland and XCB WSI on Linux) and the PWR_MAX patch, and were built from the
-same Mesa commit.
+(IMapper5 gralloc on Android, Wayland and XCB WSI on Linux), and were built from the same Mesa commit.
 
 ## Patch set
 
@@ -66,7 +65,6 @@ build and the release notes.
 | `scripts/a8xx_sp_hysteresis.py` | ✓ | ✓ |
 | `scripts/a8xx_lrz_color_mask.py` | ✓ | ✓ |
 | `scripts/autotune_bandwidth.py` | ✓ | ✓ |
-| `scripts/perf_pwr_max.py` | ✓ | ✓ |
 | `scripts/android_ndk_compat.py` | ✓ | |
 | `scripts/linux_kgsl_wsi.py` | | ✓ |
 | `scripts/process_heap_usage.py` | ✓ | ✓ |
