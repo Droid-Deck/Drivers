@@ -65,6 +65,15 @@ replace(
 )
 replace(DEVICES, A829_PROPS, A829_PROPS + '            disable_gmem = True,\n', 'A829 disable_gmem')
 
+if '0x44050100' not in Path(DEVICES).read_text():
+    replace(
+        DEVICES,
+        '        GPUId(chip_id=0x44050001, name="Adreno (TM) 830"), # KGSL\n',
+        '        GPUId(chip_id=0x44050001, name="Adreno (TM) 830"), # KGSL\n'
+        '        GPUId(chip_id=0x44050100, name="Adreno (TM) 831"), # KGSL\n',
+        'A831 KGSL chip_id 0x44050100 on the A830 entry',
+    )
+
 for chip_id, name in (('0x44041430', '845'), ('0x44051431', '850')):
     if chip_id not in Path(DEVICES).read_text():
         replace(
