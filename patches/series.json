@@ -85,14 +85,6 @@
     "summary": "GMEM autotuner bandwidth multiplier 11 -> 10"
   },
   {
-    "file": "scripts/perf_pwr_max.py",
-    "targets": [
-      "android",
-      "linux"
-    ],
-    "summary": "KGSL PWR_MAX constraint at queue creation, refreshed every 1000 submissions"
-  },
-  {
     "file": "scripts/android_ndk_compat.py",
     "targets": [
       "android"
