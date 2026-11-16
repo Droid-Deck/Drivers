@@ -1,0 +1,41 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: indiesaudi <16909576+indiesaudi@users.noreply.github.com>
+Date: Fri, 23 Oct 2026 19:30:11 +0000
+Subject: [PATCH] ir3/array_to_ssa: Resolve trivial phi chains in lookup_value
+
+remove_trivial_phi() stores the replacement of a trivial phi in
+phi->data. When that replacement is itself a phi that is found to be
+trivial later, lookup_value() returned the intermediate phi, which
+remove_trivial_phi() has already dropped from the block. Instructions
+kept a reference to the removed phi, and the first pass to touch it
+(ir3_dce, ir3_cse or register allocation) crashed reading freed IR,
+failing vkCreateComputePipelines with an access violation.
+
+Follow the data chain to the final definition. A non-trivial phi has
+data pointing at its own destination, which ends the walk.
+
+Source: https://github.com/armada-os/armada/issues/748#issuecomment-6373073950
+carried by https://github.com/armada-os/armada/pull/829
+The patched file is SPDX MIT, as is the patch.
+---
+diff --git a/src/freedreno/ir3/ir3_array_to_ssa.c b/src/freedreno/ir3/ir3_array_to_ssa.c
+index dacd516..2858322 100644
+--- a/src/freedreno/ir3/ir3_array_to_ssa.c
++++ b/src/freedreno/ir3/ir3_array_to_ssa.c
+@@ -161,10 +161,12 @@ remove_trivial_phi(struct ir3_instruction *phi)
+ static struct ir3_register *
+ lookup_value(struct ir3_register *reg)
+ {
+-   if (!reg)
+-      return NULL;
+-   if (reg->instr->opc == OPC_META_PHI)
+-      return reg->instr->data;
++   while (reg && reg->instr->opc == OPC_META_PHI) {
++      struct ir3_register *next = reg->instr->data;
++      if (next == reg)
++         break;
++      reg = next;
++   }
+    return reg;
+ }
+ 

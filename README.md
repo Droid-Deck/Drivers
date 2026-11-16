@@ -71,6 +71,7 @@ build and the release notes.
 | `linux/0001` … `linux/0006` (mesh shaders, half-wave subgroups, A8XX cube, bindless and IB fixes, subgroup shuffle broadcast) | | ✓ |
 | `lrz/0001` (A8XX LRZ flush before the next render pass) | ✓ | ✓ |
 | `linux/0007` (descriptor sets stay aligned after a pool reset) | | ✓ |
+| `ir3/0001` (trivial array phi chains resolved in `ir3_array_to_ssa`, no crash on a removed phi) | ✓ | ✓ |
 | `nir/0001` (32-bit SSBO offset wrap with pre-shifted strides, UE5 Nanite) | ✓ | ✓ |
 | `tu/0001` (flushes before a render pass chain split across command buffers, UE5 indirect draws) | ✓ | ✓ |
 
@@ -81,7 +82,9 @@ workflow applies the whole set to the current Mesa main on every push.
 The RedMagic UBWC swapchain and IMapper5 gralloc work is by [Leb-Sun](https://github.com/Leb-Sun). The A8XX resolve, hysteresis and LRZ color-mask
 register patches are adapted from [Vauzi-17/710](https://github.com/Vauzi-17/710). The A845 / A850 category-4
 repeat workaround is by [misakayuuki](https://github.com/misakayuuki). The SSBO offset wrap and render pass chain
-flush fixes are by [K11MCH1](https://github.com/K11MCH1). The A8XX buffer descriptor size fix by
+flush fixes are by [K11MCH1](https://github.com/K11MCH1). The trivial array phi chain fix is by
+[indiesaudi](https://github.com/indiesaudi), from [armada-os/armada#748](https://github.com/armada-os/armada/issues/748#issuecomment-6373073950)
+(the patched file is SPDX MIT, and so is the patch). The A8XX buffer descriptor size fix by
 [airidosas252](https://github.com/airidosas252) is now in Mesa main
 ([`5b2db4b8`](https://gitlab.freedesktop.org/mesa/mesa/-/commit/5b2db4b8)) and no longer carried here.
 

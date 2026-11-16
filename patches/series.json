@@ -164,6 +164,14 @@
     "summary": "Keep descriptor sets 64-byte aligned and inside the pool BO after vkResetDescriptorPool"
   },
   {
+    "file": "ir3/0001-ir3-array-to-ssa-resolve-trivial-phi-chains.patch",
+    "targets": [
+      "android",
+      "linux"
+    ],
+    "summary": "Resolve chains of trivial array phis in ir3_array_to_ssa so no instruction keeps a reference to a removed phi, which crashed shader compilation (vkCreateComputePipelines access violation) (by indiesaudi, MIT, from armada-os/armada#748)"
+  },
+  {
     "file": "nir/0001-nir-lower-explicit-io-keep-32bit-offset-wrap.patch",
     "targets": [
       "android",
