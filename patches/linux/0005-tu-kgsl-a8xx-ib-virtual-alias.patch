@@ -1,6 +1,43 @@
+diff --git a/src/freedreno/vulkan/tu_cs.cc b/src/freedreno/vulkan/tu_cs.cc
+index 57508f8..5e26b44 100644
+--- a/src/freedreno/vulkan/tu_cs.cc
++++ b/src/freedreno/vulkan/tu_cs.cc
+@@ -187,6 +187,7 @@ tu_cs_add_bo(struct tu_cs *cs, uint32_t size)
+                      static_cast<enum tu_bo_alloc_flags>(COND(!cs->writeable,
+                                                    TU_BO_ALLOC_GPU_READ_ONLY) |
+                                               TU_BO_ALLOC_ALLOW_DUMP |
++                                              TU_BO_ALLOC_CP_FETCH |
+                                               COND(cs->ib1, tu_bo_ib1_flags(cs->device))),
+                      cs->name);
+    if (result != VK_SUCCESS) {
+diff --git a/src/freedreno/vulkan/tu_device.cc b/src/freedreno/vulkan/tu_device.cc
+index 2af588f..709cfa4 100644
+--- a/src/freedreno/vulkan/tu_device.cc
++++ b/src/freedreno/vulkan/tu_device.cc
+@@ -3153,7 +3153,8 @@ tu_CreateDevice(VkPhysicalDevice physicalDevice,
+       &device->pipeline_suballoc, device, 128 * 1024,
+       static_cast<enum tu_bo_alloc_flags>(TU_BO_ALLOC_GPU_READ_ONLY |
+                                           TU_BO_ALLOC_ALLOW_DUMP |
+-                                          TU_BO_ALLOC_INTERNAL_RESOURCE),
++                                          TU_BO_ALLOC_INTERNAL_RESOURCE |
++                                          TU_BO_ALLOC_CP_FETCH),
+       "pipeline_suballoc");
+    if (is_kgsl(physical_device->instance)) {
+       tu_bo_suballocator_init(&device->kgsl_profiling_suballoc, device,
+diff --git a/src/freedreno/vulkan/tu_knl.h b/src/freedreno/vulkan/tu_knl.h
+index 688baed..ac58fbe 100644
 --- a/src/freedreno/vulkan/tu_knl.h
 +++ b/src/freedreno/vulkan/tu_knl.h
-@@ -57,6 +57,8 @@ struct tu_bo {
+@@ -30,6 +30,8 @@ enum tu_bo_alloc_flags {
+    TU_BO_ALLOC_SHAREABLE = 1 << 5,
+    TU_BO_ALLOC_IMPLICIT_SYNC = 1 << 6,
+    TU_BO_ALLOC_NO_32B_ROLLOVER = 1 << 7,
++   /* The command processor fetches commands or draw states from this BO. */
++   TU_BO_ALLOC_CP_FETCH = 1 << 8,
+ };
+ 
+ enum tu_mem_sync_op {
+@@ -57,6 +59,8 @@ struct tu_bo {
      * export file descriptor.
      */
     int shared_fd;
@@ -10,16 +47,17 @@
  
     bool implicit_sync : 1;
 diff --git a/src/freedreno/vulkan/tu_knl_kgsl.cc b/src/freedreno/vulkan/tu_knl_kgsl.cc
+index b7f7fe7..256b7c1 100644
 --- a/src/freedreno/vulkan/tu_knl_kgsl.cc
 +++ b/src/freedreno/vulkan/tu_knl_kgsl.cc
-@@ -297,6 +297,91 @@ kgsl_align_flag(uint64_t align)
+@@ -284,6 +284,91 @@ kgsl_align_flag(uint64_t align)
     return 0;
  }
  
 +static bool
 +kgsl_bo_needs_alias(struct tu_device *dev, enum tu_bo_alloc_flags flags)
 +{
-+   return (flags & TU_BO_ALLOC_NO_32B_ROLLOVER) &&
++   return (flags & (TU_BO_ALLOC_NO_32B_ROLLOVER | TU_BO_ALLOC_CP_FETCH)) &&
 +          dev->physical_device->has_sparse &&
 +          dev->physical_device->info->chip >= A8XX;
 +}
@@ -104,7 +142,21 @@ diff --git a/src/freedreno/vulkan/tu_knl_kgsl.cc b/src/freedreno/vulkan/tu_knl_k
  static VkResult
  kgsl_bo_init(struct tu_device *dev,
               struct vk_object_base *base,
-@@ -388,6 +473,10 @@ kgsl_bo_init(struct tu_device *dev,
+@@ -339,8 +424,12 @@ kgsl_bo_init(struct tu_device *dev,
+    /* Forcing everything in the first 4GB is overkill, but we don't have many
+     * other options here since we don't control iova addresses and kgsl
+     * doesn't have a flag to avoid 32B rollover.
++    *
++    * BOs fetched through an alias stay out of the first 4GB, which A8XX
++    * does not tolerate.
+     */
+-   if (flags & TU_BO_ALLOC_NO_32B_ROLLOVER)
++   if ((flags & TU_BO_ALLOC_NO_32B_ROLLOVER) &&
++       !kgsl_bo_needs_alias(dev, flags))
+       kgsl_flags |= KGSL_MEMFLAGS_FORCE_32BIT;
+ 
+    uint32_t id;
+@@ -416,6 +505,10 @@ kgsl_bo_init(struct tu_device *dev,
        result = kgsl_sparse_vma_map(dev, lazy_vma, bo, 0);
     } else if (flags & TU_BO_ALLOC_REPLAYABLE) {
        result = kgsl_bo_user_map(dev, bo, client_iova);
@@ -115,7 +167,7 @@ diff --git a/src/freedreno/vulkan/tu_knl_kgsl.cc b/src/freedreno/vulkan/tu_knl_k
     }
  
     if (result != VK_SUCCESS)
-@@ -531,6 +620,9 @@ kgsl_bo_finish(struct tu_device *dev, struct tu_bo *bo)
+@@ -559,6 +652,9 @@ kgsl_bo_finish(struct tu_device *dev, struct tu_bo *bo)
  
     TU_RMV(bo_destroy, dev, bo);
  
