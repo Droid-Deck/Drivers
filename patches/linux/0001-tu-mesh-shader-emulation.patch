@@ -1,6 +1,8 @@
+diff --git a/src/compiler/nir/nir_divergence_analysis.c b/src/compiler/nir/nir_divergence_analysis.c
+index 95219d9..6a7ea2b 100644
 --- a/src/compiler/nir/nir_divergence_analysis.c
 +++ b/src/compiler/nir/nir_divergence_analysis.c
-@@ -353,6 +353,7 @@ visit_intrinsic(nir_intrinsic_instr *instr, struct divergence_state *state)
+@@ -354,6 +354,7 @@ visit_intrinsic(nir_intrinsic_instr *instr, struct divergence_state *state)
     case nir_intrinsic_load_hs_patch_stride_ir3:
     case nir_intrinsic_load_tess_factor_base_ir3:
     case nir_intrinsic_load_tess_param_base_ir3:
@@ -9,9 +11,10 @@
     case nir_intrinsic_preamble_start_ir3:
     case nir_intrinsic_optimization_barrier_sgpr_amd:
 diff --git a/src/compiler/nir/nir_intrinsics.py b/src/compiler/nir/nir_intrinsics.py
+index 94b98cb..0ca0829 100644
 --- a/src/compiler/nir/nir_intrinsics.py
 +++ b/src/compiler/nir/nir_intrinsics.py
-@@ -1652,6 +1652,8 @@ system_value("tess_param_base_ir3", 2)
+@@ -1659,6 +1659,8 @@ system_value("tess_param_base_ir3", 2)
  system_value("tcs_header_ir3", 1)
  system_value("rel_patch_id_ir3", 1)
  
@@ -21,6 +24,7 @@ diff --git a/src/compiler/nir/nir_intrinsics.py b/src/compiler/nir/nir_intrinsic
  system_value("subgroup_id_shift_ir3", 1)
  
 diff --git a/src/freedreno/vulkan/meson.build b/src/freedreno/vulkan/meson.build
+index b019710..4647b23 100644
 --- a/src/freedreno/vulkan/meson.build
 +++ b/src/freedreno/vulkan/meson.build
 @@ -49,6 +49,7 @@ libtu_files = files(
@@ -32,6 +36,7 @@ diff --git a/src/freedreno/vulkan/meson.build b/src/freedreno/vulkan/meson.build
    'tu_nir_lower_multiview.cc',
    'tu_nir_lower_ray_query.cc',
 diff --git a/src/freedreno/vulkan/tu_cmd_buffer.cc b/src/freedreno/vulkan/tu_cmd_buffer.cc
+index 91305e2..da7d9ea 100644
 --- a/src/freedreno/vulkan/tu_cmd_buffer.cc
 +++ b/src/freedreno/vulkan/tu_cmd_buffer.cc
 @@ -1350,12 +1350,21 @@ tu6_update_msaa(struct tu_cmd_buffer *cmd)
@@ -70,7 +75,7 @@ diff --git a/src/freedreno/vulkan/tu_cmd_buffer.cc b/src/freedreno/vulkan/tu_cmd
     if (cmd->state.rp.disable_gmem) {
        /* force_render_mode_reason is set where disable_gmem is set. */
        return true;
-@@ -4773,6 +4787,47 @@ tu_CmdBindIndexBuffer2KHR(VkCommandBuffer commandBuffer,
+@@ -4776,6 +4790,47 @@ tu_CmdBindIndexBuffer2KHR(VkCommandBuffer commandBuffer,
  }
  TU_GENX(tu_CmdBindIndexBuffer2KHR);
  
@@ -118,7 +123,7 @@ diff --git a/src/freedreno/vulkan/tu_cmd_buffer.cc b/src/freedreno/vulkan/tu_cmd
  template <chip CHIP>
  static void
  tu6_emit_descriptor_sets(struct tu_cmd_buffer *cmd,
-@@ -4780,13 +4835,9 @@ tu6_emit_descriptor_sets(struct tu_cmd_buffer *cmd,
+@@ -4783,13 +4838,9 @@ tu6_emit_descriptor_sets(struct tu_cmd_buffer *cmd,
  {
     struct tu_descriptor_state *descriptors_state =
        tu_get_descriptors_state(cmd, bind_point);
@@ -132,7 +137,7 @@ diff --git a/src/freedreno/vulkan/tu_cmd_buffer.cc b/src/freedreno/vulkan/tu_cmd
        unsigned bindless_pkt_size = descriptors_state->max_sets_bound ?
           1 + 2 * descriptors_state->max_sets_bound :
           0;
-@@ -4805,41 +4856,11 @@ tu6_emit_descriptor_sets(struct tu_cmd_buffer *cmd,
+@@ -4808,41 +4859,11 @@ tu6_emit_descriptor_sets(struct tu_cmd_buffer *cmd,
        cs = &state_cs;
     } else {
        assert(bind_point == VK_PIPELINE_BIND_POINT_COMPUTE);
@@ -176,7 +181,7 @@ diff --git a/src/freedreno/vulkan/tu_cmd_buffer.cc b/src/freedreno/vulkan/tu_cmd
  
     if (bind_point == VK_PIPELINE_BIND_POINT_GRAPHICS) {
        assert(cs->cur == cs->end); /* validate draw state size */
-@@ -5641,6 +5662,8 @@ tu_CmdBindPipeline(VkCommandBuffer commandBuffer,
+@@ -5654,6 +5675,8 @@ tu_CmdBindPipeline(VkCommandBuffer commandBuffer,
     tu_bind_tes(cmd, pipeline->shaders[MESA_SHADER_TESS_EVAL]);
     tu_bind_gs(cmd, pipeline->shaders[MESA_SHADER_GEOMETRY]);
     tu_bind_fs(cmd, pipeline->shaders[MESA_SHADER_FRAGMENT]);
@@ -185,7 +190,7 @@ diff --git a/src/freedreno/vulkan/tu_cmd_buffer.cc b/src/freedreno/vulkan/tu_cmd
  
     /* We precompile static state and count it as dynamic, so we have to
      * manually clear bitset that tells which dynamic state is set, in order to
-@@ -6323,6 +6346,7 @@ tu_render_pass_state_merge(struct tu_cmd_buffer *cmd, const struct tu_render_pas
+@@ -6336,6 +6359,7 @@ tu_render_pass_state_merge(struct tu_cmd_buffer *cmd, const struct tu_render_pas
     struct tu_render_pass_state *dst = &cmd->state.rp;
     dst->xfb_used |= src->xfb_used;
     dst->has_tess |= src->has_tess;
@@ -193,7 +198,7 @@ diff --git a/src/freedreno/vulkan/tu_cmd_buffer.cc b/src/freedreno/vulkan/tu_cmd
     dst->has_prim_generated_query_in_rp |= src->has_prim_generated_query_in_rp;
     dst->has_vtx_stats_query_in_rp |= src->has_vtx_stats_query_in_rp;
     dst->has_zpass_done_sample_count_write_in_rp |= src->has_zpass_done_sample_count_write_in_rp;
-@@ -7801,6 +7825,15 @@ tu6_emit_per_stage_push_consts(struct tu_cs *cs,
+@@ -7814,6 +7838,15 @@ tu6_emit_per_stage_push_consts(struct tu_cs *cs,
     }
  }
  
@@ -209,7 +214,7 @@ diff --git a/src/freedreno/vulkan/tu_cmd_buffer.cc b/src/freedreno/vulkan/tu_cmd
  static void
  tu6_emit_inline_ubo(struct tu_cs *cs,
                      const struct tu_const_state *const_state,
-@@ -7819,7 +7852,7 @@ tu6_emit_inline_ubo(struct tu_cs *cs,
+@@ -7832,7 +7865,7 @@ tu6_emit_inline_ubo(struct tu_cs *cs,
        if (constlen <= ubo->const_offset_vec4)
           continue;
  
@@ -218,7 +223,7 @@ diff --git a/src/freedreno/vulkan/tu_cmd_buffer.cc b/src/freedreno/vulkan/tu_cmd
  
        tu_cs_emit_pkt7(cs, tu6_stage2opcode(type), ubo->push_address ? 7 : 3);
        tu_cs_emit(cs, CP_LOAD_STATE6_0_DST_OFF(ubo->const_offset_vec4) |
-@@ -7830,11 +7863,11 @@ tu6_emit_inline_ubo(struct tu_cs *cs,
+@@ -7843,11 +7876,11 @@ tu6_emit_inline_ubo(struct tu_cs *cs,
        if (ubo->push_address) {
           tu_cs_emit(cs, 0);
           tu_cs_emit(cs, 0);
@@ -232,7 +237,7 @@ diff --git a/src/freedreno/vulkan/tu_cmd_buffer.cc b/src/freedreno/vulkan/tu_cmd
        }
     }
  }
-@@ -7847,18 +7880,14 @@ tu7_emit_inline_ubo(struct tu_cs *cs,
+@@ -7860,18 +7893,14 @@ tu7_emit_inline_ubo(struct tu_cs *cs,
                      mesa_shader_stage type,
                      struct tu_descriptor_state *descriptors)
  {
@@ -254,7 +259,7 @@ diff --git a/src/freedreno/vulkan/tu_cmd_buffer.cc b/src/freedreno/vulkan/tu_cmd
  
     /* A7XX TODO: Emit data via sub_cs instead of NOP */
     uint64_t iova = tu_cs_emit_data_nop(cs, reinterpret_cast<uint32_t *>(addresses),
-@@ -8059,6 +8088,37 @@ tu_emit_bindless_base_addresses(struct tu_cs *cs,
+@@ -8072,6 +8101,37 @@ tu_emit_bindless_base_addresses(struct tu_cs *cs,
     }
  }
  
@@ -292,7 +297,7 @@ diff --git a/src/freedreno/vulkan/tu_cmd_buffer.cc b/src/freedreno/vulkan/tu_cmd
  template <chip CHIP>
  static struct tu_draw_state
  tu_emit_consts(struct tu_cmd_buffer *cmd, bool compute)
-@@ -8076,29 +8136,13 @@ tu_emit_consts(struct tu_cmd_buffer *cmd, bool compute)
+@@ -8089,29 +8149,13 @@ tu_emit_consts(struct tu_cmd_buffer *cmd, bool compute)
     struct tu_cs cs;
     tu_cs_begin_sub_stream(&cmd->sub_cs, dwords, &cs);
  
@@ -326,7 +331,7 @@ diff --git a/src/freedreno/vulkan/tu_cmd_buffer.cc b/src/freedreno/vulkan/tu_cmd
        struct tu_descriptor_state *descriptors =
           tu_get_descriptors_state(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS);
        for (uint32_t type = MESA_SHADER_VERTEX; type <= MESA_SHADER_FRAGMENT; type++) {
-@@ -8822,7 +8866,7 @@ tu6_draw_common(struct tu_cmd_buffer *cmd,
+@@ -8835,7 +8879,7 @@ tu6_draw_common(struct tu_cmd_buffer *cmd,
                     MESA_VK_DYNAMIC_IA_PRIMITIVE_TOPOLOGY) ||
         BITSET_TEST(cmd->vk.dynamic_graphics_state.dirty,
                     MESA_VK_DYNAMIC_RS_LINE_MODE) ||
@@ -335,7 +340,7 @@ diff --git a/src/freedreno/vulkan/tu_cmd_buffer.cc b/src/freedreno/vulkan/tu_cmd
         (cmd->state.dirty & TU_CMD_DIRTY_DRAW_STATE)) {
        tu6_update_msaa_disable<CHIP>(cmd);
     }
-@@ -8929,8 +8973,7 @@ tu6_draw_common(struct tu_cmd_buffer *cmd,
+@@ -8942,8 +8986,7 @@ tu6_draw_common(struct tu_cmd_buffer *cmd,
  static uint32_t
  tu_draw_initiator(struct tu_cmd_buffer *cmd, enum pc_di_src_sel src_sel)
  {
@@ -345,7 +350,7 @@ diff --git a/src/freedreno/vulkan/tu_cmd_buffer.cc b/src/freedreno/vulkan/tu_cmd
  
     if (primtype == DI_PT_PATCHES0)
        primtype = static_cast<enum pc_di_primtype>(primtype +
-@@ -9604,10 +9647,10 @@ template <chip CHIP>
+@@ -9902,10 +9945,10 @@ template <chip CHIP>
  static void
  tu_emit_compute_driver_params(struct tu_cmd_buffer *cmd,
                                struct tu_cs *cs,
@@ -357,7 +362,7 @@ diff --git a/src/freedreno/vulkan/tu_cmd_buffer.cc b/src/freedreno/vulkan/tu_cmd
     const struct ir3_shader_variant *variant = shader->variant;
     const struct ir3_const_state *const_state = variant->const_state;
     unsigned subgroup_size = variant->info.subgroup_size;
-@@ -9801,11 +9844,14 @@ tu_dispatch(struct tu_cmd_buffer *cmd,
+@@ -10099,11 +10142,14 @@ tu_dispatch(struct tu_cmd_buffer *cmd,
        cmd->device->physical_device->info->props.instr_cache_size;
  
     /* We don't use draw states for dispatches, so the bound pipeline
@@ -374,7 +379,7 @@ diff --git a/src/freedreno/vulkan/tu_cmd_buffer.cc b/src/freedreno/vulkan/tu_cmd
     }
  
     /* There appears to be a HW bug where in some rare circumstances it appears
-@@ -9838,7 +9884,7 @@ tu_dispatch(struct tu_cmd_buffer *cmd,
+@@ -10136,7 +10182,7 @@ tu_dispatch(struct tu_cmd_buffer *cmd,
     /* note: no reason to have this in a separate IB */
     tu_cs_emit_state_ib(cs, tu_emit_consts<CHIP>(cmd, true));
  
@@ -383,7 +388,7 @@ diff --git a/src/freedreno/vulkan/tu_cmd_buffer.cc b/src/freedreno/vulkan/tu_cmd
  
     if (cmd->state.dirty & TU_CMD_DIRTY_COMPUTE_DESC_SETS) {
        tu6_emit_descriptor_sets<CHIP>(cmd, VK_PIPELINE_BIND_POINT_COMPUTE);
-@@ -10119,6 +10165,453 @@ tu_dispatch_unaligned_indirect(VkCommandBuffer commandBuffer,
+@@ -10421,6 +10467,453 @@ tu_dispatch_unaligned_indirect(VkCommandBuffer commandBuffer,
     TU_CALLX(cmd_buffer->device, tu_dispatch)(cmd_buffer, &info);
  }
  
@@ -838,9 +843,10 @@ diff --git a/src/freedreno/vulkan/tu_cmd_buffer.cc b/src/freedreno/vulkan/tu_cmd
  tu_CmdEndRenderPass2(VkCommandBuffer commandBuffer,
                       const VkSubpassEndInfo *pSubpassEndInfo)
 diff --git a/src/freedreno/vulkan/tu_cmd_buffer.h b/src/freedreno/vulkan/tu_cmd_buffer.h
+index 75673e8..e3718c9 100644
 --- a/src/freedreno/vulkan/tu_cmd_buffer.h
 +++ b/src/freedreno/vulkan/tu_cmd_buffer.h
-@@ -319,6 +319,7 @@ struct tu_render_pass_state
+@@ -320,6 +320,7 @@ struct tu_render_pass_state
  {
     bool xfb_used;
     bool has_tess;
@@ -848,7 +854,7 @@ diff --git a/src/freedreno/vulkan/tu_cmd_buffer.h b/src/freedreno/vulkan/tu_cmd_
     bool has_prim_generated_query_in_rp;
     bool has_vtx_stats_query_in_rp;
     bool has_zpass_done_sample_count_write_in_rp;
-@@ -493,7 +494,7 @@ struct tu_cmd_state
+@@ -494,7 +495,7 @@ struct tu_cmd_state
  {
     uint32_t dirty;
  
@@ -857,7 +863,7 @@ diff --git a/src/freedreno/vulkan/tu_cmd_buffer.h b/src/freedreno/vulkan/tu_cmd_
  
     struct tu_program_state program;
  
-@@ -615,6 +616,9 @@ struct tu_cmd_state
+@@ -616,6 +617,9 @@ struct tu_cmd_state
     bool fdm_custom_resolve_subsampled;
  
     bool tessfactor_addr_set;
@@ -868,6 +874,7 @@ diff --git a/src/freedreno/vulkan/tu_cmd_buffer.h b/src/freedreno/vulkan/tu_cmd_
     bool msaa_disable;
     tu_lrz_blend_status lrz_blend_status;
 diff --git a/src/freedreno/vulkan/tu_common.h b/src/freedreno/vulkan/tu_common.h
+index dfa46d8..589daf6 100644
 --- a/src/freedreno/vulkan/tu_common.h
 +++ b/src/freedreno/vulkan/tu_common.h
 @@ -160,6 +160,8 @@ enum tu_predicate_bit {
@@ -880,9 +887,10 @@ diff --git a/src/freedreno/vulkan/tu_common.h b/src/freedreno/vulkan/tu_common.h
  
  /* Onchip timestamp register layout. */
 diff --git a/src/freedreno/vulkan/tu_device.cc b/src/freedreno/vulkan/tu_device.cc
+index f235968..2fda19e 100644
 --- a/src/freedreno/vulkan/tu_device.cc
 +++ b/src/freedreno/vulkan/tu_device.cc
-@@ -194,6 +194,13 @@ is_kgsl(struct tu_instance *instance)
+@@ -192,6 +192,13 @@ is_kgsl(struct tu_instance *instance)
     return strcmp(instance->knl->name, "kgsl") == 0;
  }
  
@@ -904,7 +912,7 @@ diff --git a/src/freedreno/vulkan/tu_device.cc b/src/freedreno/vulkan/tu_device.
        .EXT_multi_draw = true,
        .EXT_multisampled_render_to_single_sampled = true,
        .EXT_mutable_descriptor_type = true,
-@@ -818,6 +826,12 @@ tu_get_features(struct tu_physical_device *pdevice,
+@@ -821,6 +829,12 @@ tu_get_features(struct tu_physical_device *pdevice,
     features->memoryMapRangePlaced = false;
     features->memoryUnmapReserve = true;
  
@@ -917,7 +925,7 @@ diff --git a/src/freedreno/vulkan/tu_device.cc b/src/freedreno/vulkan/tu_device.
     /* VK_EXT_multi_draw */
     features->multiDraw = true;
  
-@@ -982,6 +996,10 @@ tu_get_physical_device_properties_1_1(struct tu_physical_device *pdevice,
+@@ -985,6 +999,10 @@ tu_get_physical_device_properties_1_1(struct tu_physical_device *pdevice,
                                      VK_SUBGROUP_FEATURE_ROTATE_CLUSTERED_BIT_KHR |
                                      VK_SUBGROUP_FEATURE_CLUSTERED_BIT |
                                      VK_SUBGROUP_FEATURE_ARITHMETIC_BIT;
@@ -928,7 +936,7 @@ diff --git a/src/freedreno/vulkan/tu_device.cc b/src/freedreno/vulkan/tu_device.
     if (pdevice->info->props.has_getfiberid) {
        p->subgroupSupportedStages |= VK_SHADER_STAGE_ALL_GRAPHICS;
        p->subgroupSupportedOperations |= VK_SUBGROUP_FEATURE_QUAD_BIT;
-@@ -1118,7 +1136,8 @@ tu_get_physical_device_properties_1_3(struct tu_physical_device *pdevice,
+@@ -1121,7 +1139,8 @@ tu_get_physical_device_properties_1_3(struct tu_physical_device *pdevice,
     p->requiredSubgroupSizeStages =
        p->minSubgroupSize == p->maxSubgroupSize
           ? VK_SHADER_STAGE_ALL
@@ -938,7 +946,7 @@ diff --git a/src/freedreno/vulkan/tu_device.cc b/src/freedreno/vulkan/tu_device.
  
     p->maxInlineUniformBlockSize = MAX_INLINE_UBO_RANGE;
     p->maxPerStageDescriptorInlineUniformBlocks = MAX_INLINE_UBOS;
-@@ -1445,6 +1464,43 @@ tu_get_properties(struct tu_physical_device *pdevice,
+@@ -1454,6 +1473,43 @@ tu_get_properties(struct tu_physical_device *pdevice,
     os_get_page_size(&os_page_size);
     props->minPlacedMemoryMapAlignment = os_page_size;
  
@@ -982,7 +990,7 @@ diff --git a/src/freedreno/vulkan/tu_device.cc b/src/freedreno/vulkan/tu_device.
     /* VK_EXT_multi_draw */
     props->maxMultiDrawCount = 2048;
  
-@@ -3371,6 +3427,11 @@ tu_DestroyDevice(VkDevice _device, const VkAllocationCallbacks *pAllocator)
+@@ -3405,6 +3461,11 @@ tu_DestroyDevice(VkDevice _device, const VkAllocationCallbacks *pAllocator)
  
     tu_destroy_empty_shaders(device);
  
@@ -995,9 +1003,10 @@ diff --git a/src/freedreno/vulkan/tu_device.cc b/src/freedreno/vulkan/tu_device.
  
     vk_meta_device_finish(&device->vk, &device->meta);
 diff --git a/src/freedreno/vulkan/tu_device.h b/src/freedreno/vulkan/tu_device.h
+index 4b9f6e7..c464678 100644
 --- a/src/freedreno/vulkan/tu_device.h
 +++ b/src/freedreno/vulkan/tu_device.h
-@@ -379,6 +379,9 @@ struct tu_device
+@@ -382,6 +382,9 @@ struct tu_device
     /* Lazily allocated, protected by the device mutex. */
     struct tu_bo *tess_bo;
  
@@ -1009,6 +1018,7 @@ diff --git a/src/freedreno/vulkan/tu_device.h b/src/freedreno/vulkan/tu_device.h
     uint64_t global_shader_va[GLOBAL_SH_COUNT];
 diff --git a/src/freedreno/vulkan/tu_mesh.cc b/src/freedreno/vulkan/tu_mesh.cc
 new file mode 100644
+index 0000000..6c5794c
 --- /dev/null
 +++ b/src/freedreno/vulkan/tu_mesh.cc
 @@ -0,0 +1,972 @@
@@ -1986,6 +1996,7 @@ new file mode 100644
 +}
 diff --git a/src/freedreno/vulkan/tu_mesh.h b/src/freedreno/vulkan/tu_mesh.h
 new file mode 100644
+index 0000000..a38f295
 --- /dev/null
 +++ b/src/freedreno/vulkan/tu_mesh.h
 @@ -0,0 +1,110 @@
@@ -2100,6 +2111,7 @@ new file mode 100644
 +
 +#endif
 diff --git a/src/freedreno/vulkan/tu_pipeline.cc b/src/freedreno/vulkan/tu_pipeline.cc
+index 1f86568..29d73ff 100644
 --- a/src/freedreno/vulkan/tu_pipeline.cc
 +++ b/src/freedreno/vulkan/tu_pipeline.cc
 @@ -53,6 +53,14 @@ emit_load_state(struct tu_cs *cs, unsigned opcode, enum a6xx_state_type st,
@@ -2144,7 +2156,7 @@ diff --git a/src/freedreno/vulkan/tu_pipeline.cc b/src/freedreno/vulkan/tu_pipel
  tu6_emit_dynamic_offset(struct tu_cs *cs,
                          const struct ir3_shader_variant *xs,
                          const struct tu_shader *shader,
-@@ -1562,7 +1570,7 @@ tu_hash_shaders(unsigned char *hash,
+@@ -1572,7 +1580,7 @@ tu_hash_shaders(unsigned char *hash,
     if (layout)
        _mesa_blake3_update(&ctx, layout->blake3, sizeof(layout->blake3));
  
@@ -2153,7 +2165,7 @@ diff --git a/src/freedreno/vulkan/tu_pipeline.cc b/src/freedreno/vulkan/tu_pipel
        if (stages[i] || nir[i]) {
           tu_hash_stage(&ctx, pipeline_flags, stages[i], nir[i], &keys[i]);
        }
-@@ -1736,13 +1744,13 @@ tu_pipeline_builder_compile_shaders(struct tu_pipeline_builder *builder,
+@@ -1746,13 +1754,13 @@ tu_pipeline_builder_compile_shaders(struct tu_pipeline_builder *builder,
                                      struct tu_pipeline *pipeline)
  {
     VkResult result = VK_SUCCESS;
@@ -2169,7 +2181,7 @@ diff --git a/src/freedreno/vulkan/tu_pipeline.cc b/src/freedreno/vulkan/tu_pipel
  
     const bool executable_info =
        builder->create_flags &
-@@ -1754,6 +1762,12 @@ tu_pipeline_builder_compile_shaders(struct tu_pipeline_builder *builder,
+@@ -1764,6 +1772,12 @@ tu_pipeline_builder_compile_shaders(struct tu_pipeline_builder *builder,
  
     int64_t pipeline_start = os_time_get_nano();
  
@@ -2182,7 +2194,7 @@ diff --git a/src/freedreno/vulkan/tu_pipeline.cc b/src/freedreno/vulkan/tu_pipel
     const VkPipelineCreationFeedbackCreateInfo *creation_feedback =
        vk_find_struct_const(builder->create_info->pNext, PIPELINE_CREATION_FEEDBACK_CREATE_INFO);
  
-@@ -1964,9 +1978,11 @@ tu_pipeline_builder_compile_shaders(struct tu_pipeline_builder *builder,
+@@ -1974,9 +1988,11 @@ tu_pipeline_builder_compile_shaders(struct tu_pipeline_builder *builder,
        unsigned char shader_blake3[BLAKE3_KEY_LEN + 1];
        memcpy(shader_blake3, pipeline_blake3, sizeof(pipeline_blake3));
  
@@ -2196,6 +2208,7 @@ diff --git a/src/freedreno/vulkan/tu_pipeline.cc b/src/freedreno/vulkan/tu_pipel
              shader_blake3[BLAKE3_KEY_LEN] = static_cast<unsigned char>(stage);
              shaders[stage] =
 diff --git a/src/freedreno/vulkan/tu_pipeline.h b/src/freedreno/vulkan/tu_pipeline.h
+index f9b4c7c..5b382fe 100644
 --- a/src/freedreno/vulkan/tu_pipeline.h
 +++ b/src/freedreno/vulkan/tu_pipeline.h
 @@ -70,7 +70,7 @@ struct tu_nir_shaders
@@ -2207,7 +2220,7 @@ diff --git a/src/freedreno/vulkan/tu_pipeline.h b/src/freedreno/vulkan/tu_pipeli
  };
  
  extern const struct vk_pipeline_cache_object_ops tu_nir_shaders_ops;
-@@ -216,7 +216,7 @@ struct tu_pipeline
+@@ -221,7 +221,7 @@ struct tu_pipeline
     /* draw states for the pipeline */
     struct tu_draw_state load_state;
  
@@ -2216,7 +2229,7 @@ diff --git a/src/freedreno/vulkan/tu_pipeline.h b/src/freedreno/vulkan/tu_pipeli
  
     struct tu_program_state program;
  
-@@ -243,7 +243,7 @@ struct tu_graphics_lib_pipeline {
+@@ -248,7 +248,7 @@ struct tu_graphics_lib_pipeline {
     struct {
        nir_shader *nir;
        struct tu_shader_key key;
@@ -2225,7 +2238,7 @@ diff --git a/src/freedreno/vulkan/tu_pipeline.h b/src/freedreno/vulkan/tu_pipeli
  
     /* Used to stitch together an overall layout for the final pipeline. */
     struct tu_descriptor_set_layout *layouts[MAX_SETS];
-@@ -314,6 +314,12 @@ template <chip CHIP>
+@@ -319,6 +319,12 @@ template <chip CHIP>
  void
  tu6_emit_shared_consts_enable(struct tu_crb &crb, bool shared_consts_enable);
  
@@ -2239,9 +2252,12 @@ diff --git a/src/freedreno/vulkan/tu_pipeline.h b/src/freedreno/vulkan/tu_pipeli
  void
  tu6_emit_vpc(struct tu_cs *cs,
 diff --git a/src/freedreno/vulkan/tu_shader.cc b/src/freedreno/vulkan/tu_shader.cc
+old mode 100644
+new mode 100755
+index bc5bf6e..ea7b4ec
 --- a/src/freedreno/vulkan/tu_shader.cc
 +++ b/src/freedreno/vulkan/tu_shader.cc
-@@ -1216,7 +1216,8 @@ lower_inline_ubo(nir_builder *b, nir_intrinsic_instr *intrin, void *cb_data)
+@@ -1263,7 +1263,8 @@ lower_inline_ubo(nir_builder *b, nir_intrinsic_instr *intrin, void *cb_data)
        params->dev->physical_device->info->props.load_inline_uniforms_via_preamble_ldgk;
  
     for (unsigned i = 0; i < const_state->num_inline_ubos; i++) {
@@ -2251,7 +2267,7 @@ diff --git a/src/freedreno/vulkan/tu_shader.cc b/src/freedreno/vulkan/tu_shader.
            const_state->ubos[i].offset == binding_layout->offset) {
           range = const_state->ubos[i].size_vec4 * 16;
           if (use_ldg_k) {
-@@ -1270,6 +1271,46 @@ lower_inline_ubo(nir_builder *b, nir_intrinsic_instr *intrin, void *cb_data)
+@@ -1317,6 +1318,46 @@ lower_inline_ubo(nir_builder *b, nir_intrinsic_instr *intrin, void *cb_data)
     return true;
  }
  
@@ -2298,7 +2314,7 @@ diff --git a/src/freedreno/vulkan/tu_shader.cc b/src/freedreno/vulkan/tu_shader.
  /* Returns whether we can speculatively access through a Vulkan descriptor.
   * Used for SSBO/UBO accesses, where vtn produces
   * vulkan_resource_index/load_vulkan_descriptor. See build_bindless() for the
-@@ -1604,6 +1645,20 @@ tu_lower_io(nir_shader *shader, struct tu_device *dev,
+@@ -1654,6 +1695,20 @@ tu_lower_io(nir_shader *shader, struct tu_device *dev,
        }
     }
  
@@ -2318,8 +2334,8 @@ diff --git a/src/freedreno/vulkan/tu_shader.cc b/src/freedreno/vulkan/tu_shader.
 +
     ir3_const_alloc(const_allocs, IR3_CONST_ALLOC_INLINE_UNIFORM_ADDRS, ldgk_consts, 1);
  
-    if (dev->physical_device->compiler_options.enable_ssbo_emulation) {
-@@ -1636,6 +1691,9 @@ tu_lower_io(nir_shader *shader, struct tu_device *dev,
+    if (dev->physical_device->compiler_options.enable_ssbo_emulation ||
+@@ -1689,6 +1744,9 @@ tu_lower_io(nir_shader *shader, struct tu_device *dev,
        progress |= nir_shader_intrinsics_pass(shader, lower_inline_ubo,
                                                 nir_metadata_none,
                                                 &params);
@@ -2329,7 +2345,7 @@ diff --git a/src/freedreno/vulkan/tu_shader.cc b/src/freedreno/vulkan/tu_shader.
     }
  
     progress |= nir_shader_instructions_pass(shader,
-@@ -3433,6 +3491,9 @@ tu_shader_cache_process_blob(IO &io, struct tu_shader *shader)
+@@ -3459,6 +3517,9 @@ tu_shader_cache_process_blob(IO &io, struct tu_shader *shader)
     case MESA_SHADER_FRAGMENT:
        io.bytes(&shader->fs, sizeof(shader->fs));
        break;
@@ -2339,7 +2355,7 @@ diff --git a/src/freedreno/vulkan/tu_shader.cc b/src/freedreno/vulkan/tu_shader.
     default:
        break;
     }
-@@ -3671,6 +3732,8 @@ tu_shader_create(struct tu_device *dev,
+@@ -3697,6 +3758,8 @@ tu_shader_create(struct tu_device *dev,
        return VK_ERROR_OUT_OF_HOST_MEMORY;
  
     shader->per_layer_viewport = info->per_layer_viewport;
@@ -2348,7 +2364,7 @@ diff --git a/src/freedreno/vulkan/tu_shader.cc b/src/freedreno/vulkan/tu_shader.
  
     if (nir->info.stage == MESA_SHADER_FRAGMENT &&
         key->fdm_per_layer) {
-@@ -3884,6 +3947,47 @@ tu6_get_tessmode(const struct nir_shader *shader)
+@@ -3908,6 +3971,47 @@ tu6_get_tessmode(const struct nir_shader *shader)
     }
  }
  
@@ -2396,7 +2412,7 @@ diff --git a/src/freedreno/vulkan/tu_shader.cc b/src/freedreno/vulkan/tu_shader.
  VkResult
  tu_compile_shaders(struct tu_device *device,
                     VkPipelineCreateFlags2KHR pipeline_flags,
-@@ -3899,11 +4003,13 @@ tu_compile_shaders(struct tu_device *device,
+@@ -3923,11 +4027,13 @@ tu_compile_shaders(struct tu_device *device,
                     VkPipelineCreationFeedback *stage_feedbacks)
  {
     struct ir3_shader_key ir3_key = {};
@@ -2412,7 +2428,7 @@ diff --git a/src/freedreno/vulkan/tu_shader.cc b/src/freedreno/vulkan/tu_shader.
          stage = static_cast<mesa_shader_stage>(stage + 1)) {
        const VkPipelineShaderStageCreateInfo *stage_info = stage_infos[stage];
        if (!stage_info)
-@@ -3943,7 +4049,7 @@ tu_compile_shaders(struct tu_device *device,
+@@ -3967,7 +4073,7 @@ tu_compile_shaders(struct tu_device *device,
  
     if (nir_initial_disasm) {
        for (mesa_shader_stage stage = MESA_SHADER_VERTEX;
@@ -2421,7 +2437,7 @@ diff --git a/src/freedreno/vulkan/tu_shader.cc b/src/freedreno/vulkan/tu_shader.
             stage = static_cast<mesa_shader_stage>(stage + 1)) {
        if (!nir[stage])
           continue;
-@@ -3953,7 +4059,20 @@ tu_compile_shaders(struct tu_device *device,
+@@ -3977,7 +4083,20 @@ tu_compile_shaders(struct tu_device *device,
        }
     }
  
@@ -2443,7 +2459,7 @@ diff --git a/src/freedreno/vulkan/tu_shader.cc b/src/freedreno/vulkan/tu_shader.
          stage = static_cast<mesa_shader_stage>(stage + 1)) {
        if (!nir[stage])
           continue;
-@@ -3965,16 +4084,18 @@ tu_compile_shaders(struct tu_device *device,
+@@ -3989,16 +4108,18 @@ tu_compile_shaders(struct tu_device *device,
        stage_feedbacks[stage].duration += os_time_get_nano() - stage_start;
     }
  
@@ -2465,7 +2481,7 @@ diff --git a/src/freedreno/vulkan/tu_shader.cc b/src/freedreno/vulkan/tu_shader.
     }
  
     /* With pipelines, tessellation modes can be set on either shader, for
-@@ -4027,7 +4148,8 @@ tu_compile_shaders(struct tu_device *device,
+@@ -4051,7 +4172,8 @@ tu_compile_shaders(struct tu_device *device,
     if (nir[MESA_SHADER_TESS_CTRL] && !nir[MESA_SHADER_FRAGMENT])
        ir3_key.tcs_store_primid = true;
  
@@ -2475,7 +2491,7 @@ diff --git a/src/freedreno/vulkan/tu_shader.cc b/src/freedreno/vulkan/tu_shader.
          stage = static_cast<mesa_shader_stage>(stage + 1)) {
        if (!nir[stage] || shaders[stage])
           continue;
-@@ -4057,7 +4179,8 @@ tu_compile_shaders(struct tu_device *device,
+@@ -4081,7 +4203,8 @@ tu_compile_shaders(struct tu_device *device,
  fail:
     ralloc_free(mem_ctx);
  
@@ -2485,7 +2501,7 @@ diff --git a/src/freedreno/vulkan/tu_shader.cc b/src/freedreno/vulkan/tu_shader.
          stage = static_cast<mesa_shader_stage>(stage + 1)) {
        if (shaders[stage]) {
           tu_shader_destroy(device, shaders[stage]);
-@@ -4237,6 +4360,45 @@ tu_destroy_empty_shaders(struct tu_device *dev)
+@@ -4261,6 +4384,45 @@ tu_destroy_empty_shaders(struct tu_device *dev)
     vk_pipeline_cache_object_unref(&dev->vk, &dev->empty_fs_fdm->base);
  }
  
@@ -2532,6 +2548,7 @@ diff --git a/src/freedreno/vulkan/tu_shader.cc b/src/freedreno/vulkan/tu_shader.
  tu_shader_destroy(struct tu_device *dev,
                    struct tu_shader *shader)
 diff --git a/src/freedreno/vulkan/tu_shader.h b/src/freedreno/vulkan/tu_shader.h
+index e729d44..814715e 100644
 --- a/src/freedreno/vulkan/tu_shader.h
 +++ b/src/freedreno/vulkan/tu_shader.h
 @@ -14,6 +14,7 @@

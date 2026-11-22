@@ -6,19 +6,15 @@ from mesa_edit import replace
 DEVICES = 'src/freedreno/common/freedreno_devices.py'
 
 A810_PROPS = (
-    '[a7xx_base, a7xx_gen3, a8xx_base, a8xx_gen1, GPUProps(\n'
-    '            gmem_vpc_attr_buf_size = 16384,\n'
-    '            gmem_vpc_pos_buf_size = 12288,\n'
-    '            gmem_vpc_bv_pos_buf_size = 20480,\n'
+    '[a7xx_base, a7xx_gen3, a8xx_base, a8xx_gen1, a8xx_vpc_cache_sm, GPUProps(\n'
     '            # This is possibly also needed for a830 (and all of a8xx),\n'
     '            # move to a8xx_base if confirmed needed for a830.\n'
     '            has_fs_tex_prefetch = False,\n'
 )
 A829_PROPS = (
-    '[a7xx_base, a7xx_gen3, a8xx_base, a8xx_gen2,\n'
+    '[a7xx_base, a7xx_gen3, a8xx_base, a8xx_gen2, a8xx_vpc_cache_med,\n'
     '         GPUProps(\n'
     '            shading_rate_matches_vk = True,  # TODO confirm this\n'
-    '            sysmem_vpc_bv_pos_buf_size = 24576,\n'
 )
 A810_END = (
     '        raw_magic_regs = a8xx_base_raw_magic_regs,\n'
@@ -29,7 +25,7 @@ add_gpus([
         GPUId(chip_id=0x44030000, name="Adreno (TM) 825"),
     ], A6xxGPUInfo(
         CHIP.A8XX,
-        [a7xx_base, a7xx_gen3, a8xx_base, a8xx_gen1, GPUProps(
+        [a7xx_base, a7xx_gen3, a8xx_base, a8xx_gen1, a8xx_vpc_cache_lg, GPUProps(
             sysmem_ccu_depth_cache_fraction = CCUColorCacheFraction.THREE_QUARTER.value,
             sysmem_per_ccu_depth_cache_size = 96 * 1024,
         )],
