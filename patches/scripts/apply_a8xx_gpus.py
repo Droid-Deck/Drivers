@@ -1,7 +1,7 @@
 import sys
 from pathlib import Path
 
-from mesa_edit import replace
+from mesa_edit import has_gpu_chip_id, replace
 
 DEVICES = 'src/freedreno/common/freedreno_devices.py'
 
@@ -61,7 +61,7 @@ replace(
 )
 replace(DEVICES, A829_PROPS, A829_PROPS + '            disable_gmem = True,\n', 'A829 disable_gmem')
 
-if '0x44050100' not in Path(DEVICES).read_text():
+if not has_gpu_chip_id(DEVICES, 0x44050100):
     replace(
         DEVICES,
         '        GPUId(chip_id=0x44050001, name="Adreno (TM) 830"), # KGSL\n',
