@@ -1,0 +1,101 @@
+From: 66sam <195295932+66sam@users.noreply.github.com>
+Subject: [PATCH] ir3: lower fmulz/fmadz/ffmaz left after the last late algebraic pass
+
+ir3 sets has_fmulz with lower_fmulz_with_abs_min, so nir_opt_algebraic_late
+fuses fmulz + fadd into fmadz and lowers it on a later iteration. The final
+nir_opt_algebraic_late in ir3_context_init runs once, so an fmadz it fuses
+there reaches instruction selection, which has no case for it; the compile
+fails in ir3_context_error ("Unhandled ALU op") and the pipeline creation
+crashes. Seen with a D3D12 geometry shader through vkd3d-proton.
+
+Lower any leftover fmulz/fmadz/ffmaz with the same abs-min pattern right
+after that pass, and at the end of ir3_nir_lower_variant.
+
+Generated-by: LLM
+---
+--- a/src/freedreno/ir3/ir3_nir.h
++++ b/src/freedreno/ir3/ir3_nir.h
+@@ -19,6 +19,7 @@
+ 
+ bool ir3_nir_apply_trig_workarounds(nir_shader *shader);
+ bool ir3_nir_lower_imul(nir_shader *shader);
++bool ir3_nir_lower_mulz(nir_shader *shader);
+ bool ir3_nir_lower_io_offsets(nir_shader *shader, struct ir3_compiler *c);
+ bool ir3_nir_lower_fb_read_offset(nir_shader *shader);
+ bool ir3_nir_lower_load_sample_pos(nir_shader *shader);
+--- a/src/freedreno/ir3/ir3_nir.c
++++ b/src/freedreno/ir3/ir3_nir.c
+@@ -798,6 +798,47 @@
+                               nir_metadata_control_flow, NULL);
+ }
+ 
++/* ir3 has no fmulz/fmadz/ffmaz instructions. nir_opt_algebraic_late lowers
++ * them (lower_fmulz_with_abs_min), but passes that run around the late loop
++ * can still leave one behind, which ir3_compiler_nir cannot emit. Lower any
++ * leftovers the same way right before instruction selection.
++ */
++static bool
++ir3_lower_mulz_instr(nir_builder *b, nir_alu_instr *alu, void *data)
++{
++   if (alu->op != nir_op_fmulz && alu->op != nir_op_fmadz &&
++       alu->op != nir_op_ffmaz)
++      return false;
++
++   b->cursor = nir_before_instr(&alu->instr);
++
++   nir_def *x = nir_ssa_for_alu_src(b, alu, 0);
++   nir_def *y = nir_ssa_for_alu_src(b, alu, 1);
++   nir_def *zero =
++      nir_feq_imm(b, nir_fmin(b, nir_fabs(b, x), nir_fabs(b, y)), 0.0);
++   nir_def *res;
++
++   if (alu->op == nir_op_fmulz) {
++      res = nir_bcsel(b, zero, nir_imm_zero(b, x->num_components, x->bit_size),
++                      nir_fmul(b, x, y));
++   } else {
++      nir_def *z = nir_ssa_for_alu_src(b, alu, 2);
++      nir_def *m = alu->op == nir_op_fmadz ? nir_fmad(b, x, y, z)
++                                            : nir_ffma(b, x, y, z);
++      res = nir_bcsel(b, zero, z, m);
++   }
++
++   nir_def_replace(&alu->def, res);
++   return true;
++}
++
++bool
++ir3_nir_lower_mulz(nir_shader *s)
++{
++   return nir_shader_alu_pass(s, ir3_lower_mulz_instr,
++                              nir_metadata_control_flow, NULL);
++}
++
+ void
+ ir3_finalize_nir(struct ir3_compiler *compiler,
+                  const struct ir3_shader_nir_options *options,
+@@ -1854,6 +1895,12 @@
+       OPT(s, nir_opt_cse);
+    }
+ 
++   if (OPT(s, ir3_nir_lower_mulz)) {
++      OPT(s, nir_opt_constant_folding);
++      OPT(s, nir_opt_copy_prop);
++      OPT(s, nir_opt_dce);
++   }
++
+    OPT(s, nir_opt_sink, nir_move_const_undef);
+ 
+    if (ir3_shader_debug & IR3_DBG_DISASM) {
+--- a/src/freedreno/ir3/ir3_context.c
++++ b/src/freedreno/ir3/ir3_context.c
+@@ -96,6 +96,10 @@
+    /* nir_opt_algebraic() above would have unfused our ffmas, re-fuse them. */
+    if (needs_late_alg) {
+       NIR_PASS(progress, ctx->s, nir_opt_algebraic_late);
++      /* nir_opt_algebraic_late can fuse fmulz + fadd into fmadz without
++       * getting another iteration to lower it, and ir3 cannot emit it.
++       */
++      NIR_PASS(progress, ctx->s, ir3_nir_lower_mulz);
+       NIR_PASS(progress, ctx->s, nir_opt_dce);
+    }
+ 

@@ -170,5 +170,21 @@
       "linux"
     ],
     "summary": "Back exported compressed and linear colour images with display buffers from the DroidDeck compositor when its allocator socket is present, so their frames can go on a display layer without a copy"
+  },
+  {
+    "file": "tu/0002-tu-kgsl-external-memory-host.patch",
+    "targets": [
+      "android",
+      "linux"
+    ],
+    "summary": "VK_EXT_external_memory_host on KGSL: import host pointers with GPUOBJ_IMPORT (USER_MEM_TYPE_ADDR), for vkd3d-proton OpenExistingHeapFromAddress"
+  },
+  {
+    "file": "ir3/0001-ir3-lower-leftover-fmulz-fmadz.patch",
+    "targets": [
+      "android",
+      "linux"
+    ],
+    "summary": "Lower fmulz/fmadz/ffmaz that the last late algebraic pass fuses, which ir3 cannot emit"
   }
 ]

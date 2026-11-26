@@ -105,6 +105,8 @@ build and the release notes.
 | `lrz/0001` (A8XX LRZ flush before the next render pass) | ✓ | ✓ |
 | `nir/0001` (32-bit SSBO offset wrap with pre-shifted strides, UE5 Nanite) | ✓ | ✓ |
 | `tu/0001` (flushes before a render pass chain split across command buffers, UE5 indirect draws) | ✓ | ✓ |
+| `tu/0002` (VK_EXT_external_memory_host on KGSL, for D3D12 heaps over existing memory) | ✓ | ✓ |
+| `ir3/0001` (lower fmulz/fmadz left after the last late algebraic pass) | ✓ | ✓ |
 
 A script whose anchor no longer matches Mesa main exits non-zero and a `.patch` that no longer applies fails
 `git apply`, so upstream drift fails the build instead of shipping a driver without the fix. The `Check`
