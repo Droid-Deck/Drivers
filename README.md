@@ -101,7 +101,6 @@ build and the release notes.
 | `scripts/autotune_bandwidth.py` | ✓ | ✓ |
 | `scripts/android_ndk_compat.py` | ✓ | |
 | `scripts/linux_kgsl_wsi.py` | | ✓ |
-| `scripts/process_heap_usage.py` | ✓ | ✓ |
 | `linux/0001` … `linux/0006` (mesh shaders, half-wave subgroups, A8XX cube, bindless and IB fixes, subgroup shuffle broadcast) | | ✓ |
 | `lrz/0001` (A8XX LRZ flush before the next render pass) | ✓ | ✓ |
 | `nir/0001` (32-bit SSBO offset wrap with pre-shifted strides, UE5 Nanite) | ✓ | ✓ |
