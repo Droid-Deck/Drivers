@@ -170,5 +170,13 @@
       "linux"
     ],
     "summary": "Back exported compressed and linear colour images with display buffers from the DroidDeck compositor when its allocator socket is present, so their frames can go on a display layer without a copy"
+  },
+  {
+    "file": "scripts/pipeline_cs_suballoc.py",
+    "targets": [
+      "android",
+      "linux"
+    ],
+    "summary": "Skip unused A6XX descriptor preload CS reservations on A7XX+ and trim unused tail space from pipeline and shader suballocations"
   }
 ]

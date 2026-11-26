@@ -105,6 +105,7 @@ build and the release notes.
 | `lrz/0001` (A8XX LRZ flush before the next render pass) | ✓ | ✓ |
 | `nir/0001` (32-bit SSBO offset wrap with pre-shifted strides, UE5 Nanite) | ✓ | ✓ |
 | `tu/0001` (flushes before a render pass chain split across command buffers, UE5 indirect draws) | ✓ | ✓ |
+| `scripts/pipeline_cs_suballoc.py` (skip unused A6XX descriptor preload CS space on A7XX+ and trim pipeline/shader suballocations) | ✓ | ✓ |
 
 A script whose anchor no longer matches Mesa main exits non-zero and a `.patch` that no longer applies fails
 `git apply`, so upstream drift fails the build instead of shipping a driver without the fix. The `Check`
