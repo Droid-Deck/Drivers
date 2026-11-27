@@ -105,6 +105,7 @@ build and the release notes.
 | `lrz/0001` (A8XX LRZ flush before the next render pass) | ✓ | ✓ |
 | `nir/0001` (32-bit SSBO offset wrap with pre-shifted strides, UE5 Nanite) | ✓ | ✓ |
 | `tu/0001` (flushes before a render pass chain split across command buffers, UE5 indirect draws) | ✓ | ✓ |
+| `scripts/tu_serialized_retained_nir.py` + `tu/0002` (retained link-time optimization NIR kept serialized, CS2 pipeline pre-warm) | ✓ | ✓ |
 
 A script whose anchor no longer matches Mesa main exits non-zero and a `.patch` that no longer applies fails
 `git apply`, so upstream drift fails the build instead of shipping a driver without the fix. The `Check`
