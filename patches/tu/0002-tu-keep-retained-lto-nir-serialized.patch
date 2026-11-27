@@ -1,0 +1,177 @@
+From dde41be113d1e3c03e25804bca1248a20ff5edc9 Mon Sep 17 00:00:00 2001
+From: xlulx <92148312+xlulx@users.noreply.github.com>
+Date: Fri, 27 Nov 2026 20:07:25 +0300
+Subject: [PATCH] tu: Keep retained link-time optimization NIR serialized
+
+Libraries created with RETAIN_LINK_TIME_OPTIMIZATION_INFO kept their
+post-link NIR alive in the pipeline cache. Live NIR allocates a 32 KiB
+ralloc slab for every instruction size it uses, so each retained shader
+holds several slabs. Counter-Strike 2 pre-warms thousands of pipeline
+libraries from its pipeline cache at start; on Android the slabs
+overflow scudo's primary region for their size class, each one then
+becomes its own mapping, and the process reaches the kernel's mapping
+limit within seconds. malloc() then returns NULL and pipeline creation
+crashes.
+
+Keep the retained NIR as one serialized blob per stage instead, as the
+pipeline cache already stores it, and deserialize it when a
+link-time-optimized pipeline needs it.
+---
+ src/freedreno/vulkan/tu_pipeline.cc | 72 +++++++++++++++++++++++------
+ 1 file changed, 58 insertions(+), 14 deletions(-)
+
+diff --git a/src/freedreno/vulkan/tu_pipeline.cc b/src/freedreno/vulkan/tu_pipeline.cc
+index 3bd7b22..51b9fd0 100644
+--- a/src/freedreno/vulkan/tu_pipeline.cc
++++ b/src/freedreno/vulkan/tu_pipeline.cc
+@@ -1656,7 +1656,7 @@ tu_nir_shaders_destroy(struct vk_device *device,
+       container_of(object, struct tu_nir_shaders, base);
+ 
+    for (unsigned i = 0; i < ARRAY_SIZE(shaders->nir); i++)
+-      ralloc_free(shaders->nir[i]);
++      free(shaders->nir[i].data);
+ 
+    vk_pipeline_cache_object_finish(&shaders->base);
+    vk_free(&device->alloc, shaders);
+@@ -1694,9 +1694,10 @@ tu_nir_shaders_serialize(struct vk_pipeline_cache_object *object,
+       container_of(object, struct tu_nir_shaders, base);
+ 
+    for (unsigned i = 0; i < ARRAY_SIZE(shaders->nir); i++) {
+-      if (shaders->nir[i]) {
++      if (shaders->nir[i].data) {
+          blob_write_uint8(blob, 1);
+-         nir_serialize(blob, shaders->nir[i], true);
++         blob_write_uint64(blob, shaders->nir[i].size);
++         blob_write_bytes(blob, shaders->nir[i].data, shaders->nir[i].size);
+       } else {
+          blob_write_uint8(blob, 0);
+       }
+@@ -1721,14 +1722,44 @@ tu_nir_shaders_deserialize(struct vk_pipeline_cache *cache,
+ 
+    for (unsigned i = 0; i < ARRAY_SIZE(shaders->nir); i++) {
+       if (blob_read_uint8(blob)) {
+-         shaders->nir[i] =
+-            nir_deserialize(NULL, ir3_get_compiler_options(dev->compiler), blob);
++         size_t size = blob_read_uint64(blob);
++         const void *data = blob_read_bytes(blob, size);
++         if (blob->overrun || !(shaders->nir[i].data = malloc(size))) {
++            tu_nir_shaders_destroy(&dev->vk, &shaders->base);
++            return NULL;
++         }
++         memcpy(shaders->nir[i].data, data, size);
++         shaders->nir[i].size = size;
+       }
+    }
+ 
+    return &shaders->base;
+ }
+ 
++static bool
++tu_serialize_nir(nir_shader *nir, struct tu_serialized_nir *out)
++{
++   struct blob blob;
++   blob_init(&blob);
++   nir_serialize(&blob, nir, true);
++   if (blob.out_of_memory) {
++      blob_finish(&blob);
++      return false;
++   }
++   blob_finish_get_buffer(&blob, &out->data, &out->size);
++   return true;
++}
++
++static nir_shader *
++tu_deserialize_nir(void *mem_ctx, struct tu_device *dev,
++                   const struct tu_serialized_nir *serialized)
++{
++   struct blob_reader reader;
++   blob_reader_init(&reader, serialized->data, serialized->size);
++   return nir_deserialize(mem_ctx, ir3_get_compiler_options(dev->compiler),
++                          &reader);
++}
++
+ static struct tu_nir_shaders *
+ tu_nir_cache_lookup(struct vk_pipeline_cache *cache,
+                     const void *key_data, size_t key_size,
+@@ -1793,6 +1824,7 @@ tu_pipeline_builder_compile_shaders(struct tu_pipeline_builder *builder,
+    nir_shader *nir[ARRAY_SIZE(stage_infos)] = { NULL };
+    struct tu_shader *shaders[ARRAY_SIZE(stage_infos)] = { NULL };
+    nir_shader *post_link_nir[ARRAY_SIZE(nir)] = { NULL };
++   struct tu_serialized_nir retained_nir[ARRAY_SIZE(nir)] = {};
+    char *nir_initial_disasm[ARRAY_SIZE(stage_infos)] = { NULL };
+    bool cache_hit = false;
+ 
+@@ -1893,10 +1925,12 @@ tu_pipeline_builder_compile_shaders(struct tu_pipeline_builder *builder,
+          struct tu_graphics_lib_pipeline *library = builder->libraries[i];
+ 
+          for (unsigned j = 0; j < ARRAY_SIZE(library->shaders); j++) {
+-            if (library->shaders[j].nir) {
++            if (library->shaders[j].nir.data) {
+                assert(!nir[j]);
+-               nir[j] = nir_shader_clone(builder->mem_ctx,
+-                     library->shaders[j].nir);
++               nir[j] = tu_deserialize_nir(builder->mem_ctx, builder->device,
++                                           &library->shaders[j].nir);
++               if (!nir[j])
++                  return VK_ERROR_OUT_OF_HOST_MEMORY;
+                keys[j] = library->shaders[j].key;
+                must_compile = true;
+             }
+@@ -2050,12 +2084,22 @@ tu_pipeline_builder_compile_shaders(struct tu_pipeline_builder *builder,
+       if (retain_nir) {
+          nir_shaders =
+             tu_nir_shaders_init(builder->device, &nir_blake3, sizeof(nir_blake3));
++         bool serialized = nir_shaders;
+          for (mesa_shader_stage stage = MESA_SHADER_VERTEX;
+               stage < ARRAY_SIZE(nir); stage = static_cast<mesa_shader_stage>(stage + 1)) {
+             if (!post_link_nir[stage])
+                continue;
+ 
+-            nir_shaders->nir[stage] = post_link_nir[stage];
++            if (serialized)
++               serialized = tu_serialize_nir(post_link_nir[stage],
++                                             &nir_shaders->nir[stage]);
++            ralloc_free(post_link_nir[stage]);
++            post_link_nir[stage] = NULL;
++         }
++
++         if (!serialized) {
++            result = VK_ERROR_OUT_OF_HOST_MEMORY;
++            goto fail;
+          }
+ 
+          nir_shaders = tu_nir_cache_insert(builder->cache, nir_shaders);
+@@ -2115,8 +2159,8 @@ done:
+    if (nir_shaders) {
+       for (mesa_shader_stage stage = MESA_SHADER_VERTEX;
+            stage < ARRAY_SIZE(nir); stage = static_cast<mesa_shader_stage>(stage + 1)) {
+-         if (nir_shaders->nir[stage]) {
+-            post_link_nir[stage] = nir_shaders->nir[stage];
++         if (nir_shaders->nir[stage].data) {
++            retained_nir[stage] = nir_shaders->nir[stage];
+          }
+       }
+    }
+@@ -2130,8 +2174,8 @@ done:
+       for (mesa_shader_stage stage = MESA_SHADER_VERTEX;
+            stage < ARRAY_SIZE(library->shaders);
+            stage = static_cast<mesa_shader_stage>(stage + 1)) {
+-         if (!post_link_nir[stage] && library->shaders[stage].nir) {
+-            post_link_nir[stage] = library->shaders[stage].nir;
++         if (!retained_nir[stage].data && library->shaders[stage].nir.data) {
++            retained_nir[stage] = library->shaders[stage].nir;
+             keys[stage] = library->shaders[stage].key;
+          }
+ 
+@@ -2165,7 +2209,7 @@ done:
+       for (mesa_shader_stage stage = MESA_SHADER_VERTEX;
+            stage < ARRAY_SIZE(library->shaders);
+            stage = static_cast<mesa_shader_stage>(stage + 1)) {
+-         library->shaders[stage].nir = post_link_nir[stage];
++         library->shaders[stage].nir = retained_nir[stage];
+          library->shaders[stage].key = keys[stage];
+       }
+    }
+-- 
+2.53.0
+
