@@ -172,6 +172,14 @@
     "summary": "Back exported compressed and linear colour images with display buffers from the DroidDeck compositor when its allocator socket is present, so their frames can go on a display layer without a copy"
   },
   {
+    "file": "scripts/tu_serialized_retained_nir.py",
+    "targets": [
+      "android",
+      "linux"
+    ],
+    "summary": "Header half of the serialized retained NIR change below, written against either stage count (the Linux mesh shader patch widens it)"
+  },
+  {
     "file": "tu/0002-tu-keep-retained-lto-nir-serialized.patch",
     "targets": [
       "android",
