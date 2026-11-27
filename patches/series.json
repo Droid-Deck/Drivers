@@ -170,5 +170,13 @@
       "linux"
     ],
     "summary": "Back exported compressed and linear colour images with display buffers from the DroidDeck compositor when its allocator socket is present, so their frames can go on a display layer without a copy"
+  },
+  {
+    "file": "tu/0002-tu-keep-retained-lto-nir-serialized.patch",
+    "targets": [
+      "android",
+      "linux"
+    ],
+    "summary": "Keep the NIR that pipeline libraries retain for link-time optimization serialized, so Counter-Strike 2's pipeline pre-warm no longer exhausts Android's memory mapping limit and crashes in vkCreateGraphicsPipelines"
   }
 ]
